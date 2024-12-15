@@ -1,0 +1,37 @@
+Achievements System
+- Defender: Perform a total of 250 successful blocks
+- Undershot: Get a game over during the final boss in the good ending
+- Golden Palace: Reach Stage 5a
+- Silver Palace: Reach Stage 5b
+- Showdown: Beat the game in any Difficulty and recieve the good ending
+- Prodigy: Beat the game in Hard Difficulty and recieve the good ending
+- Master: Beat the game in Insane Difficulty and recieve the good ending
+- Faded Master - Beat the game in Insane Difficulty and recieve the bad ending
+- Faded Ways: Beat the game and recieve the Bad Ending
+- Untouchable: Beat the game in Normal Difficulty without losing over 25% of you health per round
+- Crossed Out: Beat the game in Normal Difficulty whilst only using the cross attack
+- Beat em Up: Earn a score of 50 in Infinity Mode
+- Champion: Reach the Top 10 on the Leaderboard for Insane Difficulty Infinity Mode
+
+
+
+
+Stage Select - Requires Game to be complete on Normal Difficulty in both endings
+Infinity Mode - Requires a total of 175 enemies to be defeated
+
+
+**Police Officer Character - Taser and Baton**
++ 1 Character
+
+Login System
+Leaderboard System
+Enemy Designs
+Enemy Healthbars
+Enemy Hit Notifier
+Stage Designs
+Boss Designs (Very Fast Side Switching Boss)
+Final Boss AI
+Health Pickups
+Extra Characters
+Pause Menu
+
