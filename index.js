@@ -12,6 +12,7 @@ kaboom({ // Initiates kaboom instance
 loadFont("arcade", "/fonts/arcade.ttf") // Loads the font used throughout the game
 //loading sounds
 loadSound("game_over", "/sounds/game_over.mp3")
+loadSound("axe", "/sounds/FX/axe.wav")
 loadSound("menu_theme", "/sounds/menu.mp3")
 loadSound("bad_ending", "/sounds/BadEnding.mp3")
 loadSound("good_ending", "/sounds/good_ending.mp3")
@@ -34,6 +35,9 @@ loadSound("stage_five_a", "/sounds/Stage5a.mp3")
 loadSound("stage_five_b", "/sounds/Stage5b.mp3")
 loadSound("stage_six", "/sounds/Stage6.mp3")
 loadSound("Boss_Final", "/sounds/Boss_Final.mp3")
+loadSound("FinalBossIntro", "/sounds/FinalBossIntro.mp3")
+loadSound("FinalBossLoop1", "/sounds/FinalBossLoop1.mp3")
+loadSound("FinalBossLoop2", "/sounds/FinalBossLoop2.mp3")
 loadSound("leaderboard", "/sounds/leaderboard.mp3")
 loadSound("button", "/sounds/button.mp3")
 loadSound("level_complete", "/sounds/level_complete.mp3")
@@ -62,6 +66,7 @@ loadSprite("character_select_bg", "/sprites/backgrounds/charSelect.png")
 loadSprite("leaderboard_bg", "/sprites/backgrounds/leaderboardInput.png")
 loadSprite("dark", "/sprites/ui/Black.jpg")
 loadSprite("fightyManIcon", "/sprites/ui/fightyMan.png")
+loadSprite("hodsonIcon", "/sprites/ui/hodson.png")
 loadSprite("grigoryIcon", "/sprites/ui/grigory.png")
 loadSprite("venusIcon", "/sprites/ui/venus.png")
 loadSprite("stage_select", "/sprites/backgrounds/Stage Select.png")
@@ -127,8 +132,8 @@ loadSpriteAtlas("/sprites/enemies/hodson.png", {
         anims: {
             'idle': { from: 0, to: 0, loop: true, speed: 0.5 },
             'walking': { from: 1, to: 4, loop: true, speed: 6 },
-            'cross': { from: 5, to: 8, loop: false, speed: 1 },
-            'stapler': { from: 9, to: 10, loop: true, speed: 10 },
+            'cross': { from: 5, to: 8, loop: false, speed: 10 },
+            'stapler': { from: 9, to: 10, loop: true, speed: 6 },
         }
     }
 })
@@ -284,18 +289,18 @@ let stageGround = add([
     "stageGround"
 ]) // Stores the ground in memory. Used for collision detection with entity movement
 
-let accountStats = { // Holds the account stats for the logged in account
-    "username": "player",
-    "password": null,
-    "enemies_defeated": 0,
-    "hardest_good": -1,
-    "infinity_0_highest": 0,
-    "infinity_1_highest": 0,
-    "infinity_2_highest": 0,
-    "infinity_3_highest": 0,
-    "infinity_4_highest": 0,
-    "stage_select": false,
-    "infinity_mode": false
+let accountStats = {
+    "username": "admin",
+    "password": "admin123",
+    "enemies_defeated": 100,
+    "hardest_good": 5,
+    "infinity_0_highest": 18,
+    "infinity_1_highest": 8,
+    "infinity_2_highest": 21,
+    "infinity_3_highest": 6,
+    "infinity_4_highest": 5,
+    "stage_select": true,
+    "boss_rush": true
 }
 let userAccountStats = [ // Array holding the data of all locally stored accounts for the current session, including default scores
     {
@@ -309,7 +314,7 @@ let userAccountStats = [ // Array holding the data of all locally stored account
         "infinity_3_highest": 1,
         "infinity_4_highest": 7,
         "stage_select": false,
-        "infinity_mode": false
+        "boss_rush": false
     },
     {
         "username": "johnny",
@@ -322,7 +327,7 @@ let userAccountStats = [ // Array holding the data of all locally stored account
         "infinity_3_highest": 9,
         "infinity_4_highest": 4,
         "stage_select": false,
-        "infinity_mode": false
+        "boss_rush": false
     },
     {
         "username": "gary",
@@ -335,7 +340,7 @@ let userAccountStats = [ // Array holding the data of all locally stored account
         "infinity_3_highest": 1,
         "infinity_4_highest": 1,
         "stage_select": false,
-        "infinity_mode": true
+        "boss_rush": true
     },
     {
         "username": "david",
@@ -348,7 +353,7 @@ let userAccountStats = [ // Array holding the data of all locally stored account
         "infinity_3_highest": 14,
         "infinity_4_highest": 1,
         "stage_select": false,
-        "infinity_mode": true
+        "boss_rush": true
     },
     {
         "username": "joseph",
@@ -361,7 +366,7 @@ let userAccountStats = [ // Array holding the data of all locally stored account
         "infinity_3_highest": 1,
         "infinity_4_highest": 1,
         "stage_select": false,
-        "infinity_mode": true
+        "boss_rush": true
     },
     {
         "username": "fighty man",
@@ -374,7 +379,7 @@ let userAccountStats = [ // Array holding the data of all locally stored account
         "infinity_3_highest": 19,
         "infinity_4_highest": 12,
         "stage_select": false,
-        "infinity_mode": true
+        "boss_rush": true
     },
     {
         "username": "admin",
@@ -387,7 +392,7 @@ let userAccountStats = [ // Array holding the data of all locally stored account
         "infinity_3_highest": 6,
         "infinity_4_highest": 5,
         "stage_select": true,
-        "infinity_mode": true
+        "boss_rush": true
     }
 ]
 
@@ -396,15 +401,18 @@ let playerControlEvents = {
     keyDown: [], // Stores the keyDown events for the player
     keyUp: [], // Stores the keyUp events for the player
 }
+
 let stageFourBackgroundEntity = null // Stores the object of the moving background in Stage 4
 let bgMoving = false // Stores the boolean value of whether the background is moving in Stage 2
 let difficultyMultiplier = null // Stores the value of the enemy difficulty multiplier
+
 let selectedCharacter = null // Stores the value of the selected character, used for round starts
 let fightyManAttack = 2 // Stores the default value of the Final Boss' first attack
 let hodsonAttack = 1 // Stores the default value of the Final Boss' first attack
 let playerControlEnabled = false // Stores whether or not the player controls are enabled
 let deathCount = 0
 let sessionScore = 0
+let globalVolume = 0.5
 let difficultyNames = ["Easiest Difficulty", "Easy Difficulty", "Normal Difficulty", "Hard Difficulty", "Insane Difficulty"]; // Stores the names of the difficulties
 let difficulty = 2 // Default difficulty is normal (2)
 let gameMode = null // Stores the current game mode (either "main", "infinity" or "stage_select")
@@ -414,50 +422,47 @@ let oldManSpawn = null
 let currentSong = play("menu_theme", { loop: true, volume: 0.0 }) // Loops the menu theme while the player is in the menu
 // Initialise a global variable to store the current playing song
 
-class Healthbar { // Class for handling healthbars
+class Healthbar {
     constructor(options) {
-        this.options = options // Stores the options in memory
-        this.text = options.text // Text to display on the healthbar
-        this.icon = options.icon // Icon to display on the healthbar
-        this.maxHealth = options.maxHealth // Max health of the entity
-        this.position = options.position // Position of the healthbar
-        this.color = options.color || rgb(255, 0, 0) // Color of the healthbar
-        this.backgroundColor = options.backgroundColor || rgb(50, 50, 50) // Color of the healthbar background
-        this.flip = options.flip || false // Whether or not the healthbar should be flipped horizontally
-        this.healthbar = null // Stores the healthbar in memory
-        this.healthbarOutline = null // Stores the healthbar outline in memory
-        this.health = this.maxHealth // Sets the health to the max health by default
+        this.options = options;
+        this.text = options.text;
+        this.icon = options.icon;
+        this.maxHealth = options.maxHealth;
+        this.position = options.position;
+        this.color = options.color || rgb(255, 0, 0);
+        this.backgroundColor = options.backgroundColor || rgb(50, 50, 50);
+        this.flip = options.flip || false;
+        this.healthbar = null;
+        this.healthbarOutline = null;
+        this.health = this.maxHealth;
 
-        if (currentRound === 6 && options.flip === true) return // Prevents boss bars on Stage 6
         // Draw the healthbar outline
         this.healthbarOutline = add([
             sprite("healthbar"),
             pos(this.position),
             z(20),
             scale(0.75),
-        ])
-        // Scales up the icon for the Player's Healthbar, if they select Johnny or Johnny's Twin Brother
-        let scaleSize = this.icon === "johnny_hp" ? 0.7 : 7
+        ]);
 
-        // Adds the healthbar image
-        const healthbarImage = add([
+        let scaleSize = this.icon === "johnny_hp" ? 0.7 : 7;
+
+        this.healthbarImage = add([
             sprite(this.icon),
             pos(this.position.x + 30, this.position.y + 135),
             z(19),
             scale(scaleSize),
-            "healthbar"
-        ])
+            "healthbarImage"
+        ]);
 
-        // Add the name of the player/boss above the healthbar
-        const healthbarText = add([
+        this.healthbarText = add([
             text(this.text, { align: this.flip ? "right" : "left", size: 48, font: "arcade" }),
-            pos(this.position.x + 200 - (this.flip ? this.text.length * + 25 : 0), this.position.y + 135), // Subtract the length of the text times -10 from the x position if the healthbar is flipped
+            pos(this.position.x + (this.flip ? 330 : 200) - (this.flip ? this.text.length * 28 : 0), this.position.y + 135),
             z(19),
             scale(0.7),
-            "healthbar"
-        ])
+            "healthbarText"
+        ]);
 
-        this.healthbar = [ // Top and bottom half of the healthbar (For a gradient effect)
+        this.healthbar = [
             add([
                 rect(386, 35),
                 pos(this.position.x + 184, this.position.y + 225),
@@ -476,119 +481,115 @@ class Healthbar { // Class for handling healthbars
                 anchor("left"),
                 "healthbar"
             ])
-        ]
+        ];
 
-        // Healthbar background
-        const healthbarBackground = add([
+        this.healthbarBackground = add([
             rect(386, 70),
             pos(this.position.x + 184, this.position.y + 240),
             color(this.backgroundColor),
             z(18),
             anchor("left"),
-            "healthbar"
-        ])
+            "healthbarBackground"
+        ]);
 
-        if (this.flip) { // Flips the healthbar horizontally if specified
-            this.healthbarOutline.flipX = true
-            healthbarImage.flipX = true
-            healthbarImage.pos.x += 393
-            healthbarText.pos.x += 30
+        if (this.flip) {
+            this.healthbarOutline.flipX = true;
+            this.healthbarImage.flipX = true;
+            this.healthbarImage.pos.x += 393;
+            this.healthbarText.pos.x += 30;
             this.healthbar.forEach(healthbar => {
-                healthbar.pos.x += 238
-            })
-            healthbarBackground.flipX = true
-            healthbarBackground.pos.x -= 154
+                healthbar.pos.x += 233;
+            });
+            this.healthbarBackground.flipX = true;
+            this.healthbarBackground.pos.x -= 154;
         }
     }
 
     hurt(amount) {
-        if (this.bottomTween) this.bottomTween.finish()
-        if (this.topTween) this.topTween.finish()
-        // Subtract the damage from the actual health
-        this.health -= amount
+        if (this.bottomTween) this.bottomTween.finish();
+        if (this.topTween) this.topTween.finish();
 
-        // Calculate the new width of the healthbar based on the actual health
-        let newWidth = (this.health / this.maxHealth) * 386
-        if (newWidth < 0) newWidth = 0 // Stops the healthbar from going below 0
+        this.health -= amount;
+        let newWidth = (this.health / this.maxHealth) * 386;
+        if (newWidth < 0) newWidth = 0;
 
-        // Animate the healthbar
-        this.topTween = tween( // Top half of the healthbar
+        this.topTween = tween(
             this.healthbar[0].width,
             newWidth,
             0.5,
             (width) => this.healthbar[0].width = width,
             easings.easeOutCubic
-        )
-        this.bottomTween = tween( // Bottom half of the healthbar
+        );
+        this.bottomTween = tween(
             this.healthbar[1].width,
             newWidth,
             0.5,
             (width) => this.healthbar[1].width = width,
             easings.easeOutCubic
-        )
-
+        );
     }
+
     heal(amount) {
-        if (this.bottomTween) this.bottomTween.finish()
-        if (this.topTween) this.topTween.finish()
-        // Subtract the damage from the actual health
-        this.health += amount
+        if (this.bottomTween) this.bottomTween.finish();
+        if (this.topTween) this.topTween.finish();
 
-        // Calculate the new width of the healthbar based on the actual health
-        let newWidth = (this.health / this.maxHealth) * 386
-        if (newWidth < 0) newWidth = 0 // Stops the healthbar from going below 0
+        this.health += amount;
+        let newWidth = (this.health / this.maxHealth) * 386;
+        if (newWidth < 0) newWidth = 0;
 
-        // Animate the healthbar
-        this.topTween = tween( // Top half of the healthbar
-            this.healthbar[0].width, //initial width
-            newWidth, //final width
+        this.topTween = tween(
+            this.healthbar[0].width,
+            newWidth,
             0.5,
-            (width) => this.healthbar[0].width = width, //callback function hints to Kaboom that we want to update the width of the healthbar
+            (width) => this.healthbar[0].width = width,
             easings.easeOutCubic
-        )
-        this.bottomTween = tween( // Bottom half of the healthbar
-            this.healthbar[1].width, //initial width
-            newWidth, //final width
+        );
+        this.bottomTween = tween(
+            this.healthbar[1].width,
+            newWidth,
             0.5,
-            (width) => this.healthbar[1].width = width, //callback function hints to Kaboom that we want to update the width of the healthbar
+            (width) => this.healthbar[1].width = width,
             easings.easeOutCubic
-        )
+        );
     }
 
     destroy() {
-        // Destroy the healthbar outline
-        if (this.healthbarOutline) {
-            destroy(this.healthbarOutline);
-            this.healthbarOutline = null;
-        }
+        if (this.flip) {
+            // Destroy the healthbar outline
+            if (this.healthbarOutline) {
+                destroy(this.healthbarOutline);
+                this.healthbarOutline = null;
+            }
 
-        // Destroy the healthbar image
-        if (this.healthbarImage) {
-            destroy(this.healthbarImage);
-            this.healthbarImage = null;
-        }
+            // Destroy the healthbar image
+            if (this.healthbarImage) {
+                destroy(this.healthbarImage);
+                this.healthbarImage = null;
+            }
 
-        // Destroy the healthbar text
-        if (this.healthbarText) {
-            destroy(this.healthbarText);
-            this.healthbarText = null;
-        }
+            // Destroy the healthbar text
+            if (this.healthbarText) {
+                destroy(this.healthbarText);
+                this.healthbarText = null;
+            }
 
-        // Destroy the healthbar
-        if (this.healthbar) {
-            this.healthbar.forEach(healthbar => {
-                destroy(healthbar);
-            });
-            this.healthbar = null;
-        }
+            // Destroy the healthbar
+            if (this.healthbar) {
+                this.healthbar.forEach(healthbar => {
+                    destroy(healthbar);
+                });
+                this.healthbar = null;
+            }
 
-        // Destroy the healthbar background
-        if (this.healthbarBackground) {
-            destroy(this.healthbarBackground);
-            this.healthbarBackground = null;
+            // Destroy the healthbar background
+            if (this.healthbarBackground) {
+                destroy(this.healthbarBackground);
+                this.healthbarBackground = null;
+            }
         }
     }
 }
+
 
 
 // DifficultyIndex = Difficulty Number
@@ -704,9 +705,10 @@ async function enableEnemyAI() {
 
 
             if (enemy.attackType === "fightyMan") { //If the enemy is the final boss, initiate Final Boss AI.
-                console.log(enemy.hp())
+                let maxHealth = enemy.healthbar.maxHealth
                 healthDifficultyMultiplier = 1 + (enemy.healthbar.maxHealth - enemy.hp()) / enemy.healthbar.maxHealth;
                 if (enemy.attackCooldown === true) return
+                if (enemy.dead) return
                 enemy.collisionIgnore.push("enemy")
 
 
@@ -721,12 +723,13 @@ async function enableEnemyAI() {
                         easings.linear
                     )
                     enemy.play("idle")
-                    await wait(2)
-                    fightyManAttack = 3
+                    await wait(1.5 / difficultyMultiplier / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
+                    fightyManAttack = getRandomNumber(3, 6)
                     enemy.attackCooldown = false
                 }
 
                 if (fightyManAttack === 2) { // Initiates the walking left animation
+
                     enemy.attackCooldown = true
                     if (enemy.curAnim() !== "walking") enemy.play("walking")
                     await tween(
@@ -737,13 +740,13 @@ async function enableEnemyAI() {
                         easings.linear
                     )
                     enemy.play("idle")
-                    await wait(1 / difficultyMultiplier / healthDifficultyMultiplier)
-                    fightyManAttack = 3
+                    await wait(1 / difficultyMultiplier / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
+                    fightyManAttack = getRandomNumber(3, 6)
                     enemy.attackCooldown = false
                 }
                 if (fightyManAttack === 3) { // Initiates the fireballs attack
                     enemy.attackCooldown = true
-                    await wait(0.5 / difficultyMultiplier / healthDifficultyMultiplier)
+                    await wait(0.5 / difficultyMultiplier / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
 
                     const playerPos = player.worldPos() // Gets the player's position
                     const enemyPos = enemy.worldPos() // Gets the enemy's position
@@ -831,7 +834,7 @@ async function enableEnemyAI() {
 
                     enemy.attackCooldown = false
                 }
-                if (fightyManAttack === 4) { // Initiates the fireshild attack
+                if (fightyManAttack === 4) { // Initiates the fireshield attack
                     enemy.attackCooldown = true
                     play("flamethrower")
                     await performAttack(enemy, "fireShield")
@@ -848,12 +851,13 @@ async function enableEnemyAI() {
                     if (horizontalDirection === "left") enemy.flipX = false
                     if (horizontalDirection === "right") enemy.flipX = true
                     const distance = Math.sqrt(Math.pow(enemyPos.x - playerPos.x, 2) + Math.pow(enemyPos.y - playerPos.y, 2)) // Calculates the distance between the player and the enemy
+
+                    await wait(0.5 / difficultyMultiplier / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
                     if (horizontalDirection === "left") fightyManAttack = 1
                     if (horizontalDirection === "right") fightyManAttack = 2
                     if (distance < 150) fightyManAttack = 4
                     enemy.attackCooldown = false
                 }
-
                 if (fightyManAttack === 5) { // Initiates the firePunch attack
                     enemy.attackCooldown = true
                     if (enemy.curAnim() !== "walking") enemy.play("walking")
@@ -875,10 +879,10 @@ async function enableEnemyAI() {
                     enemy.attackCooldown = false
 
                 }
-                if (fightyManAttack === 6) { // Initiates the fireballs attack
+                if (fightyManAttack === 6) { // Initiates the firewalls attack
                     enemy.attackCooldown = true
 
-                    await wait(0.5 / difficultyMultiplier / healthDifficultyMultiplier) // Delay between attacks
+                    await wait(0.5 / difficultyMultiplier / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
 
                     const playerPos = player.worldPos() // Gets the player's position
                     const enemyPos = enemy.worldPos() // Gets the enemy's position
@@ -985,8 +989,8 @@ async function enableEnemyAI() {
                         easings.linear
                     )
                     enemy.play("idle")
-                    await wait(0.4 / difficultyMultiplier / healthDifficultyMultiplier)
-                    hodsonAttack = 3
+                    await wait(0.8 / difficultyMultiplier / healthDifficultyMultiplier)
+                    hodsonAttack = getRandomNumber(3, 4)
                     enemy.attackCooldown = false
                 }
 
@@ -1001,13 +1005,13 @@ async function enableEnemyAI() {
                         easings.linear
                     )
                     enemy.play("idle")
-                    await wait(0.4 / difficultyMultiplier / healthDifficultyMultiplier)
-                    hodsonAttack = 3
+                    await wait(0.8 / difficultyMultiplier / healthDifficultyMultiplier)
+                    hodsonAttack = getRandomNumber(3, 4)
                     enemy.attackCooldown = false
                 }
-                if (hodsonAttack === 3) { // Initiates the fireballs attack
+                if (hodsonAttack === 3) { // Initiates the stapler attack
                     enemy.attackCooldown = true
-                    await wait(0.5 / difficultyMultiplier / healthDifficultyMultiplier)
+                    await wait(1 / difficultyMultiplier / healthDifficultyMultiplier)
 
                     const playerPos = player.worldPos() // Gets the player's position
                     const enemyPos = enemy.worldPos() // Gets the enemy's position
@@ -1033,10 +1037,10 @@ async function enableEnemyAI() {
                         hitboxScale: 0.5,
                         health: 999,
                         attributes: {
-                            strength: 5 * healthDifficultyMultiplier,
+                            strength: 2 * healthDifficultyMultiplier,
                             attackType: "fireball",
                         }
-                    }, enemyPos, horizontalDirection, 1, false, true)
+                    }, enemyPos, horizontalDirection, 2, false, true)
                     await wait(0.1)
                     play("reload")
                     spawnProjectile({
@@ -1045,10 +1049,10 @@ async function enableEnemyAI() {
                         hitboxScale: 0.5,
                         health: 999,
                         attributes: {
-                            strength: 5 * healthDifficultyMultiplier,
+                            strength: 2 * healthDifficultyMultiplier,
                             attackType: "fireball",
                         }
-                    }, enemyPos, horizontalDirection, 1, false, true)
+                    }, enemyPos, horizontalDirection, 2, false, true)
                     await wait(0.1)
                     play("reload")
                     spawnProjectile({
@@ -1057,19 +1061,25 @@ async function enableEnemyAI() {
                         hitboxScale: 0.5,
                         health: 999,
                         attributes: {
-                            strength: 5 * healthDifficultyMultiplier,
+                            strength: 2 * healthDifficultyMultiplier,
                             attackType: "fireball",
                         }
-                    }, enemyPos, horizontalDirection, 1, false, true)
+                    }, enemyPos, horizontalDirection, 2, false, true)
 
 
                     const distance = Math.sqrt(Math.pow(enemyPos.x - playerPos.x, 2) + Math.pow(enemyPos.y - playerPos.y, 2)) // Calculates the distance between the player and the enemy
                     if (distance < 150) hodsonAttack = 4
+                    else {
+                        hodsonAttack = getRandomNumber(2, 4)
+                        if (horizontalDirection === "left" && hodsonAttack === 2) {
+                            hodsonAttack = 1
+                        }
+                    }
 
                     enemy.attackCooldown = false
                 }
 
-                if (hodsonAttack === 4) { // Initiates the firePunch attack
+                if (hodsonAttack === 4) { // Initiates the axe attack
                     enemy.attackCooldown = true
                     if (enemy.curAnim() !== "walking") enemy.play("walking")
                     const playerPos = player.worldPos() // Gets the player's position
@@ -1081,13 +1091,18 @@ async function enableEnemyAI() {
                     await tween(
                         enemy.worldPos(),
                         (horizontalDirection === "left") ? vec2(player.worldPos().x - 100, player.worldPos().y) : vec2(player.worldPos().x + 100, player.worldPos().y),
-                        1 / (enemy.speed / 5) / difficultyMultiplier / healthDifficultyMultiplier,
+                        1.5 / (enemy.speed / 5) / difficultyMultiplier / healthDifficultyMultiplier,
                         (pos) => enemy.pos = pos,
                         easings.linear
                     )
+                    play("axe")
                     await performAttack(enemy, "cross")
                     enemy.attackCooldown = false
-                    if (getRandomNumber(1, 4) !== 4) hodsonAttack = getRandomNumber(1, 4)
+                    hodsonAttack = getRandomNumber(2, 4)
+                    if (horizontalDirection === "left" && hodsonAttack === 2) {
+                        hodsonAttack = 1
+                    }
+
                 }
                 enemy.attackCooldown = false
             }
@@ -1290,13 +1305,13 @@ async function enableEnemyAI() {
                     if (enemyPos.y >= playerPos.y) verticalDirection = "up"; // Checks whether the entity is to the upper of the player
                     if (horizontalDirection === "left") {
                         enemy.flipX = false
-                        shotgunDown = "southWest"
-                        shotgunUp = "northWest"
+                        shotgunDown = "southEast"
+                        shotgunUp = "northEast"
                     }
                     if (horizontalDirection === "right") {
                         enemy.flipX = true
-                        shotgunDown = "southEast"
-                        shotgunUp = "northEast"
+                        shotgunDown = "southWest"
+                        shotgunUp = "northWest"
                     }
 
                     if (enemy.dead) return
@@ -1438,7 +1453,6 @@ async function enableEnemyAI() {
                         (pos) => enemy.pos = pos,
                         easings.linear
                     )
-                    console.log("Y Set")
                     tween(
                         enemy.worldPos(),
                         vec2(2500, enemy.worldPos().y),
@@ -1446,7 +1460,6 @@ async function enableEnemyAI() {
                         (pos) => enemy.pos = pos,
                         easings.linear
                     )
-                    console.log("X Move")
                     for (let i = 0; i < 6; i++) { // Spawns in the projectiles that the boss shoots,
                         spawnProjectile({
                             spriteName: "fireProj",
@@ -1458,6 +1471,28 @@ async function enableEnemyAI() {
                                 attackType: "fireball",
                             }
                         }, vec2(enemy.worldPos().x + 150, enemy.worldPos().y + 50), "left", 2, false, true)
+                        if (difficulty >= 3 && getRandomNumber(1, 2) === 2) {
+                            spawnProjectile({
+                                spriteName: "fireProj",
+                                scaleAmount: 5,
+                                hitboxScale: 0.5,
+                                health: 999,
+                                attributes: {
+                                    strength: 2,
+                                    attackType: "fireball",
+                                }
+                            }, vec2(enemy.worldPos().x + 150, enemy.worldPos().y + 50), "southEast", 2, false, true)
+                            spawnProjectile({
+                                spriteName: "fireProj",
+                                scaleAmount: 5,
+                                hitboxScale: 0.5,
+                                health: 999,
+                                attributes: {
+                                    strength: 2,
+                                    attackType: "fireball",
+                                }
+                            }, vec2(enemy.worldPos().x + 150, enemy.worldPos().y + 50), "northEast", 2, false, true)
+                        }
                         await wait(0.5)
                     }
                 }
@@ -1495,6 +1530,28 @@ async function enableEnemyAI() {
                                 attackType: "fireball",
                             }
                         }, vec2(enemy.worldPos().x - 100, enemy.worldPos().y + 50), "right", 2, false, true)
+                        if (difficulty >= 3 && getRandomNumber(1, 2) === 2) {
+                            spawnProjectile({
+                                spriteName: "fireProj",
+                                scaleAmount: 5,
+                                hitboxScale: 0.5,
+                                health: 999,
+                                attributes: {
+                                    strength: 2,
+                                    attackType: "fireball",
+                                }
+                            }, vec2(enemy.worldPos().x - 100, enemy.worldPos().y + 50), "southWest", 2, false, true)
+                            spawnProjectile({
+                                spriteName: "fireProj",
+                                scaleAmount: 5,
+                                hitboxScale: 0.5,
+                                health: 999,
+                                attributes: {
+                                    strength: 2,
+                                    attackType: "fireball",
+                                }
+                            }, vec2(enemy.worldPos().x - 100, enemy.worldPos().y + 50), "northWest", 2, false, true)
+                        }
                         await wait(0.5)
                     }
 
@@ -1515,6 +1572,56 @@ async function enableEnemyAI() {
 
 
     )
+}
+
+// Variables for music handling
+const bpm = 128;
+const barDuration = (60 / bpm) * 16; // Duration of one bar in seconds
+
+async function startFinalBossMusic() {
+    console.log("Starting Final Boss Music");
+
+    // Play the FinalBossIntro
+    currentSong = play("FinalBossIntro", { volume: globalVolume });
+    await wait(currentSong.duration() - 0.05);
+
+    // Loop FinalBossLoop1
+    currentSong = play("FinalBossLoop1", { loop: true, volume: globalVolume });
+
+    // Continuously check FightyMan's HP and switch to FinalBossLoop2 when HP <= 50%
+    checkFightyManHP();
+}
+
+async function switchToLoop2() {
+    console.log("Switching to FinalBossLoop2");
+
+    // Calculate the delay until the next bar starts
+    const currentTime = currentSong.time();
+    const timeUntilNextBar = barDuration - (currentTime % barDuration);
+
+    // Wait until the next bar starts
+    await wait(timeUntilNextBar - 0.05);
+
+    // Switch to FinalBossLoop2
+
+    newSong = play("FinalBossLoop2", { loop: true, volume: globalVolume });
+    await wait(0.05)
+    stopMusic(currentSong)
+    currentSong = newSong
+}
+
+async function checkFightyManHP() {
+    let maxHealth = 400 * difficultyMultiplier
+    enemies = get("enemy")
+    enemies.forEach(enemy => {
+        if (enemy.attackType === "fightyMan") fightyMan = enemy
+    })
+
+    while (fightyMan.hp() > maxHealth * 0.5) {
+        await wait(0.1); // Check every 100 milliseconds
+    }
+    // Once FightyMan's HP is <= 50%, switch the music
+    await switchToLoop2();
 }
 
 
@@ -1833,7 +1940,7 @@ async function performAttack(entity, attackName) {
                 if (!character.is("player")) { play(`punch${getRandomNumber(1, 2)}`) } // Plays a random punch sound effect
                 else { play(`enemyPunch${character.weight}`) } // Plays a punch sound effect
                 character.hurt(7 * entity.strength * (1 - character.defense))
-                if ((character.healthbar && currentRound !== 6) || (currentRound === 6 && character.is("player"))) character.healthbar.hurt(7 * entity.strength * (1 - character.defense)) // Update the healthbar visual
+                if ((character.healthbar && currentRound !== 7) || (currentRound === 7 && character.is("player"))) character.healthbar.hurt(7 * entity.strength * (1 - character.defense)) // Update the healthbar visual
             }
 
 
@@ -1871,8 +1978,9 @@ async function checkDeath(character, attackHitbox) {
         character.collisionIgnore.push("enemy") // Stops the enemy from colliding with the enemy
         // Remove the hitbox after the animation is done
         if (character.dead) return;
-        if (character.attackType !== "venus" && character.attackType !== "fightyMan") { character.play("downed") }
+        if (character.attackType !== "venus" && character.attackType !== "fightyMan" && character.attackType !== "hodson") { character.play("downed") }
         if (character.attackType === "fightyMan") character.play("fireShield")
+        if (character.attackType === "hodson") character.play("idle")
         tween(
             character.worldPos(),
             vec2(character.worldPos().x + (character.flipX ? 150 : -150), character.worldPos().y),
@@ -1895,11 +2003,14 @@ async function checkDeath(character, attackHitbox) {
         await tween(
             character.opacity,
             0,
-            character.attackType === "grigory" || character.attackType === "fightyMan" || character.attackType === "venus" ? 0.35 : 3,
+            character.attackType === "grigory" || character.attackType === "fightyMan" || character.attackType === "venus" || character.attackType === "hodson" ? 0.35 : 3,
             (op) => character.opacity = op,
             easings.easeInCubic
         )
         await wait(0.5, () => character.destroy())
+        if (gameMode === "boss_rush" && (character.attackType === "grigory" || character.attackType === "fightyMan" || character.attackType === "venus" || character.attackType === "hodson")) {
+            character.healthbar.destroy()
+        }
     }
 }
 
@@ -2143,10 +2254,10 @@ function getEnemyAttributes(entityName, currentRound, difficulty) {
         }
     } else if (entityName === "hodson") {
         enemyAttributes = {
-            health: 300 * difficultyMultiplier,
-            healthbar: 300 * difficultyMultiplier,
+            health: 180 * difficultyMultiplier,
+            healthbar: 180 * difficultyMultiplier,
             aggression: 60 * difficultyMultiplier,
-            speed: 9 * difficultyMultiplier,
+            speed: 6 * difficultyMultiplier,
             weight: 2,
             strength: 2.2 * difficultyMultiplier,
             attackType: "hodson",
@@ -2217,7 +2328,7 @@ async function spawnGrigory(zSpawn) {
         })
     }, zSpawn)
     stopMusic(currentSong)
-    currentSong = play("stage_four", { loop: true }, { volume: 0.5 })
+    currentSong = play("Boss", { loop: true }, { volume: globalVolume })
     grigory.play("idle")
 }
 async function spawnVenus(zSpawn) {
@@ -2237,7 +2348,7 @@ async function spawnVenus(zSpawn) {
         })
     }, zSpawn)
     stopMusic(currentSong)
-    currentSong = play("stage_four", { loop: true }, { volume: 0.5 })
+    currentSong = play("Boss", { loop: true }, { volume: globalVolume })
     venus.play("idle")
 }
 async function spawnAndrew(zSpawn) {
@@ -2287,25 +2398,27 @@ async function spawnFightyMan(zSpawn) {
             flip: true
         })
     }, zSpawn)
+    startFinalBossMusic(() => fightyMan.attributes);
     fightyMan.play("idle")
 }
 async function spawnHodson(zSpawn) {
-    let maxHealth = 300 * difficultyMultiplier
+    let maxHealth = 180 * difficultyMultiplier
     const hodson = spawnEntity({
         spriteName: "hodson",
-        scaleAmount: 7.5,
+        scaleAmount: 6.5,
         hitboxScale: 0.5,
         attributes: getEnemyAttributes("hodson", currentRound, difficulty),
         tag: "enemy",
         healthbar: new Healthbar({
             text: "Hodson",
-            icon: "fightyManIcon",
+            icon: "hodsonIcon",
             maxHealth: maxHealth,
             position: vec2(1300, -100),
             color: rgb(255, 0, 0),
             flip: true
         })
     }, zSpawn)
+    currentSong = play("Boss", { loop: true }, { volume: globalVolume })
     hodson.play("idle")
 }
 async function spawnWave(enemyQueue, entityCap) {
@@ -2536,9 +2649,10 @@ async function levelInit(playerTag, introText, songName, backgrounds) { // Funct
     if (enemyAIBasic !== null) enemyAIBasic.cancel() // Stops the enemy AI from running
     enableEnemyAI() // Enables enemy AI (movement, attacking, etc.)
     setCursor("default") // Sets the cursor to the default cursor
-    //change song to stage one
-    stopMusic(currentSong)
-    currentSong = play(songName, { loop: true, volume: 0.5 })
+    if (songName !== "None") {
+        stopMusic(currentSong)
+        currentSong = play(songName, { loop: true, volume: 0.5 })
+    }
     let playerHP = 100
     if (selectedCharacter === "grigory") healthbarIcon = "grigoryIcon"
     else healthbarIcon = "johnny_hp"
@@ -2983,7 +3097,7 @@ scene("stage_three", async (playerTag) => {
 })
 
 scene("stage_four", async (playerTag) => {
-    await levelInit(playerTag, "Stage Four", "Boss", ["stage_four_bg"])
+    await levelInit(playerTag, "Stage Four", "stage_four", ["stage_four_bg"])
     currentRound = 4
 
 
@@ -3199,6 +3313,7 @@ scene("stage_four", async (playerTag) => {
 
 scene("stage_five_a", async (playerTag) => {
     currentRound = 5
+    let bossSpawned = false
     await levelInit(playerTag, "Stage Five", "stage_five_a", ["stage_five_a_bg"])
 
 
@@ -3208,59 +3323,64 @@ scene("stage_five_a", async (playerTag) => {
     })
 
 
-    // await spawnWave([
-    //     { name: "wait", time: 3 },
-    //     { name: "gary", yPos: 50 },
-    //     { name: "gary", yPos: 100 },
-    //     { name: "joseph", yPos: 180 },
-    //     { name: "wait", time: 7 },
-    //     { name: "andrew", yPos: 50 },
-    //     { name: "gary", yPos: 150 },
-    //     { name: "gary", yPos: 200 },
-    //     { name: "wait", time: 7 },
-    //     { name: "david", yPos: 25 },
-    //     { name: "gary", yPos: 90 },
-    //     { name: "david", yPos: 125 },
-    //     { name: "wait", time: 7 },
-    //     { name: "david", yPos: 75 },
-    //     { name: "david", yPos: 150 },
-    //     { name: "david", yPos: 275 },
-    //     { name: "wait", time: 10 },
-    //     { name: "joseph", yPos: 10 },
-    //     { name: "joseph", yPos: 40 },
-    //     { name: "joseph", yPos: 90 },
-    //     { name: "joseph", yPos: 280 },
-    //     { name: "wait", time: 10 },
-    //     { name: "david", yPos: 60 },
-    //     { name: "wait", time: 2 },
-    //     { name: "david", yPos: 90 },
-    //     { name: "wait", time: 2 },
-    //     { name: "david", yPos: 60 },
-    //     { name: "wait", time: 2 },
-    //     { name: "david", yPos: 90 },
-    //     { name: "wait", time: 2 },
-    //     { name: "david", yPos: 60 },
-    //     { name: "wait", time: 2 },
-    //     { name: "david", yPos: 90 },
-    //     { name: "wait", time: 2 },
-    //     { name: "david", yPos: 60 },
-    //     { name: "wait", time: 2 },
-    //     { name: "david", yPos: 90 },
-    //     { name: "joseph", yPos: 60 },
-    //     { name: "joseph", yPos: 90 },
-    //     { name: "joseph", yPos: 120 },
-    // ], 5); // Spawns are capped at 5 at a time
     await spawnWave([
-        { name: "fadeout" },
-        { name: "wait", time: 2 },
-        { name: "fightyMan", yPos: 90 },
-    ], 2)
-    currentSong = play("Boss_Final")
+        { name: "wait", time: 3 },
+        // { name: "gary", yPos: 50 },
+        // { name: "gary", yPos: 100 },
+        // { name: "joseph", yPos: 180 },
+        // { name: "wait", time: 7 },
+        // { name: "andrew", yPos: 50 },
+        // { name: "gary", yPos: 150 },
+        // { name: "gary", yPos: 200 },
+        // { name: "wait", time: 7 },
+        // { name: "david", yPos: 25 },
+        // { name: "gary", yPos: 90 },
+        // { name: "david", yPos: 125 },
+        // { name: "wait", time: 7 },
+        // { name: "david", yPos: 75 },
+        // { name: "david", yPos: 150 },
+        // { name: "david", yPos: 275 },
+        // { name: "wait", time: 10 },
+        // { name: "joseph", yPos: 10 },
+        // { name: "joseph", yPos: 40 },
+        // { name: "joseph", yPos: 90 },
+        // { name: "joseph", yPos: 280 },
+        // { name: "wait", time: 10 },
+        // { name: "david", yPos: 60 },
+        // { name: "wait", time: 2 },
+        // { name: "david", yPos: 90 },
+        // { name: "wait", time: 2 },
+        // { name: "david", yPos: 60 },
+        // { name: "wait", time: 2 },
+        // { name: "david", yPos: 90 },
+        // { name: "wait", time: 2 },
+        // { name: "david", yPos: 60 },
+        // { name: "wait", time: 2 },
+        // { name: "david", yPos: 90 },
+        // { name: "wait", time: 2 },
+        // { name: "david", yPos: 60 },
+        // { name: "wait", time: 2 },
+        // { name: "david", yPos: 90 },
+        // { name: "joseph", yPos: 60 },
+        // { name: "joseph", yPos: 90 },
+        { name: "joseph", yPos: 120 },
+    ], 5); // Spawns are capped at 5 at a time
 
 
+    const spawnBoss = onUpdate(async () => {
+        if (!get("enemy").length) {
+            spawnBoss.cancel()
+            await spawnWave([
+                { name: "fadeout" },
+                { name: "wait", time: 2 },
+                { name: "fightyMan", yPos: 90 },
+            ], 2)
+            bossSpawned = true
+        }
+    })
 
     const roundEnd = onUpdate(async () => {
-        if (!get("enemy").length) {
+        if (!get("enemy").length && bossSpawned === true) {
             roundEnd.cancel()
             await levelComplete()
             go("good_ending", playerTag)
@@ -3279,11 +3399,10 @@ scene("stage_five_b", async (playerTag) => {
 
 
     await spawnWave([
+        { name: "gary", yPos: 90 },
         { name: "fadeout" },
         { name: "wait", time: 1 },
-        { name: "grigory", yPos: 90 },
-        { name: "wait", time: 1 },
-        { name: "fightyMan", yPos: 90 },
+        { name: "venus", yPos: 90 },
         { name: "fadeout" },
         { name: "wait", time: 1 },
         { name: "hodson", yPos: 90 },
@@ -3300,24 +3419,44 @@ scene("stage_five_b", async (playerTag) => {
         }
     })
 })
-scene("infinity_mode", async (stage_background, playerTag, player) => {
-    // Helper function for saving a leaderboard entry. using pantry as a database (https://getpantry.cloud/)
+scene("boss_rush", async (playerTag) => {
 
-    stage_background += "_bg"
+    stage_background = "stage_five_a_bg"
 
-    if (stage_background === "stage_one_bg") await levelInit(playerTag, `Infinity-Mode: ${difficultyNames[difficulty]}`, "stage_six", ["stage_one_sea_bg", "stage_one_pier_bg"])
-    else await levelInit(playerTag, `Infinity-Mode: ${difficultyNames[difficulty]}`, "stage_six", [stage_background])
-
+    await levelInit(playerTag, `Boss-Rush: ${difficultyNames[difficulty]}`, "None", [stage_background])
     await spawnWave([
-        { name: "wait", time: 3 },
-    ], 100);
+        { name: "fadeout" },
+        { name: "wait", time: 1 },
+        { name: "venus", yPos: 90 },
+        { name: "fadeout" },
+        { name: "wait", time: 1 },
+        { name: "grigory", yPos: 90 },
+        { name: "fadeout" },
+        { name: "wait", time: 1 },
+        { name: "hodson", yPos: 90 },
+        { name: "fadeout" },
+        { name: "wait", time: 1 },
+        { name: "fightyMan", yPos: 90 },
+    ], 1); // Spawns are capped at 1 at a time
+
+    const roundEnd = onUpdate(async () => {
+        if (!get("enemy").length) {
+            roundEnd.cancel()
+            await levelComplete()
+            go("starting_menu", playerTag)
+        }
+    })
 }
+
+
+
 
 )
 scene("character_select", () => { // Opens up a new scene for the character select
     stopMusic(currentSong) // Stops the menu theme
     setCursor("default")
-    currentSong = play("character_select", { loop: true, volume: 0.5 })
+
+    currentSong = play(gameMode === "boss_rush" ? "stage_six" : "character_select", { loop: true, volume: 0.5 })
 
     const chevPositions = [] // Stores the postions the chevrons can be in
 
@@ -3400,9 +3539,8 @@ scene("character_select", () => { // Opens up a new scene for the character sele
         if (gameMode === "main") {
             go("stage_one", characterNames[cPos])
         }
-        if (gameMode === "infinity") {
-            sessionScore = 0
-            go("stage_select", characterNames[cPos])
+        if (gameMode === "boss_rush") {
+            go("boss_rush", characterNames[cPos])
         }
         if (gameMode === "stage_select") {
             go("stage_select", characterNames[cPos])
@@ -3421,9 +3559,8 @@ scene("character_select", () => { // Opens up a new scene for the character sele
         if (gameMode === "main") {
             go("stage_one", selectedCharacter)
         }
-        if (gameMode === "infinity") {
-            sessionScore = 0
-            go("stage_select", selectedCharacter)
+        if (gameMode === "boss_rush") {
+            go("boss_rush", selectedCharacter)
         }
         if (gameMode === "stage_select") {
             go("stage_select", selectedCharacter)
@@ -3730,7 +3867,7 @@ scene("stage_select", async (playerTag) => {
     onKeyPress("z", () => {
         currentRound = cPos + 1
         if (gameMode === "stage_select") go(`${stagesArray[cPos]}`, playerTag)
-        if (gameMode === "infinity") go(`infinity_mode`, stagesArray[cPos], playerTag)
+        if (gameMode === "infinity") go(`boss_rush`, stagesArray[cPos], playerTag)
 
     })
 })
@@ -3747,7 +3884,7 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
             userAccountStats[i] = accountStats
         }
     }
-    if (accountStats.enemies_defeated > 99) accountStats.infinity_mode = true
+    if (accountStats.enemies_defeated > 99) accountStats.boss_rush = true
     if (accountStats.hardest_good > 0) accountStats.stage_select = true
     add([
         sprite("menu_bg"),
@@ -3771,12 +3908,12 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
         gameMode = "main"
         go("character_select")
     })
-    addButton("Infinity Mode", { x: 290, y: 80 }, vec2(width() / 2 + 780, (height() / 2) + 64), async () => {
-        if (accountStats.infinity_mode === false) {
+    addButton("Boss Rush", { x: 290, y: 80 }, vec2(width() / 2 + 780, (height() / 2) + 64), async () => {
+        if (accountStats.boss_rush === false) {
             play("bad")
             if (menuButtonPressed === true) return
             infinityLockedText = add([
-                text("Defeat a total of 100 enemies to access Infinity Mode", { align: "center", size: 20 }),
+                text("Defeat a total of 100 enemies to access the Boss Rush", { align: "center", size: 20 }),
                 color(255, 255, 255),
                 pos(width() / 2, (height() / 2) + 400),
                 anchor("center"),
@@ -3791,7 +3928,7 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
 
         else {
             play("button")
-            gameMode = "infinity"
+            gameMode = "boss_rush"
             go("character_select")
         }
     })
@@ -3810,44 +3947,44 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
         difficultyText.text = difficultyNames[difficulty];
     })
 
-    addButton("Leaderboard", { x: 290, y: 80 }, vec2((width() / 2) + 780, (height() / 2) + 320), async () => {
-        if (accountStats.infinity_mode === true) {
-            play("button")
-            go("leaderboard")
-        }
-        else {
-            play("bad")
-            if (menuButtonPressed === true) return
-            infinityLockedText = add([
-                text("Defeat a total of 100 enemies to access Infinity Mode", { align: "center", size: 20 }),
-                color(255, 255, 255),
-                pos(width() / 2, (height() / 2) + 400),
-                anchor("center"),
-                z(8),
-                opacity(1) // Set initial opacity to 1
-            ])
-            menuButtonPressed = true
-            await wait(2)
-            infinityLockedText.destroy()
-            menuButtonPressed = false
-        }
-    })
+    // addButton("Leaderboard", { x: 290, y: 80 }, vec2((width() / 2) + 780, (height() / 2) + 320), async () => {
+    //     if (accountStats.boss_rush === true) {
+    //         play("button")
+    //         go("leaderboard")
+    //     }
+    //     else {
+    //         play("bad")
+    //         if (menuButtonPressed === true) return
+    //         infinityLockedText = add([
+    //             text("Defeat a total of 100 enemies to access Infinity Mode", { align: "center", size: 20 }),
+    //             color(255, 255, 255),
+    //             pos(width() / 2, (height() / 2) + 400),
+    //             anchor("center"),
+    //             z(8),
+    //             opacity(1) // Set initial opacity to 1
+    //         ])
+    //         menuButtonPressed = true
+    //         await wait(2)
+    //         infinityLockedText.destroy()
+    //         menuButtonPressed = false
+    //     }
+    // })
 
-    if (loggedIn === false) {
-        addButton("Login", { x: 160, y: 80 }, vec2((width() / 2) + 850, (height() / 2 - 400)), () => {
-            play("button")
-            go("login")
-        })
-    }
+    // if (loggedIn === false) {
+    //     addButton("Login", { x: 160, y: 80 }, vec2((width() / 2) + 850, (height() / 2 - 400)), () => {
+    //         play("button")
+    //         go("login")
+    //     })
+    // }
 
-    if (loggedIn === true) {
-        addButton("Logout", { x: 160, y: 80 }, vec2((width() / 2) + 850, (height() / 2 - 400)), () => {
-            play("button")
-            go("logout")
-        })
-    }
+    // if (loggedIn === true) {
+    //     addButton("Logout", { x: 160, y: 80 }, vec2((width() / 2) + 850, (height() / 2 - 400)), () => {
+    //         play("button")
+    //         go("logout")
+    //     })
+    // }
 
-    addButton("Stage Select", { x: 290, y: 80 }, vec2((width() / 2) + 480, (height() / 2) + 320), async () => {
+    addButton("Stage Select", { x: 290, y: 80 }, vec2((width() / 2) + 630, (height() / 2) + 320), async () => {
         if (accountStats.stage_select === false) {
             play("bad")
             if (menuButtonPressed === true) return
@@ -3885,201 +4022,201 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
 
 })
 
-scene("logout", async () => {
-    add([
-        sprite("dark"),
-        pos(0, 0),
-        scale(10),
-        fixed(),
-        z(0)
-    ])
+// scene("logout", async () => {
+//     add([
+//         sprite("dark"),
+//         pos(0, 0),
+//         scale(10),
+//         fixed(),
+//         z(0)
+//     ])
 
-    add([
-        text("Logging out...", { align: "center", size: 48 }),
-        color(255, 255, 255),
-        pos(width() / 2, (height() / 2) - 128),
-        anchor("center"),
-        z(4)
-    ])
-    for (let i = 0; i < userAccountStats.length; i++) {
-        if (accountStats.username === userAccountStats[i].username) {
-            userAccountStats[i] = userAccountStats
-        }
-    }
-    accountStats = {
-        "enemies_defeated": 0,
-        "blocks": 0,
-        "crosses": 0,
-        "jabs": 0,
-        "hardest_good": -1,
-        "infinity_0_highest": 0,
-        "infinity_1_highest": 0,
-        "infinity_2_highest": 0,
-        "infinity_3_highest": 0,
-        "infinity_4_highest": 0,
-        "stage_select": false,
-        "infinity_mode": false
-    }
+//     add([
+//         text("Logging out...", { align: "center", size: 48 }),
+//         color(255, 255, 255),
+//         pos(width() / 2, (height() / 2) - 128),
+//         anchor("center"),
+//         z(4)
+//     ])
+//     for (let i = 0; i < userAccountStats.length; i++) {
+//         if (accountStats.username === userAccountStats[i].username) {
+//             userAccountStats[i] = userAccountStats
+//         }
+//     }
+//     accountStats = {
+//         "enemies_defeated": 0,
+//         "blocks": 0,
+//         "crosses": 0,
+//         "jabs": 0,
+//         "hardest_good": -1,
+//         "infinity_0_highest": 0,
+//         "infinity_1_highest": 0,
+//         "infinity_2_highest": 0,
+//         "infinity_3_highest": 0,
+//         "infinity_4_highest": 0,
+//         "stage_select": false,
+//         "boss_rush": false
+//     }
 
-    await wait(0.8)
-    loggedIn = false
+//     await wait(0.8)
+//     loggedIn = false
 
-    go("starting_menu")
+//     go("starting_menu")
 
-})
+// })
 
-scene("login", async () => {
-    add([
-        sprite("dark"),
-        pos(0, 0),
-        scale(10),
-        fixed(),
-        z(0)
-    ])
-    let titleText = add([
-        text("Press ENTER to switch between username and password", 8),
-        pos(width() / 2, height() / 2 - 400),
-        anchor("center"),
-    ]);
+// scene("login", async () => {
+//     add([
+//         sprite("dark"),
+//         pos(0, 0),
+//         scale(10),
+//         fixed(),
+//         z(0)
+//     ])
+//     let titleText = add([
+//         text("Press ENTER to switch between username and password", 8),
+//         pos(width() / 2, height() / 2 - 400),
+//         anchor("center"),
+//     ]);
 
-    let username = add([
-        text("", 8),
-        pos(width() / 2, height() / 2 - 200),
-        anchor("center"),
-    ]);
+//     let username = add([
+//         text("", 8),
+//         pos(width() / 2, height() / 2 - 200),
+//         anchor("center"),
+//     ]);
 
-    let usernameText = add([
-        text("Username:", 8),
-        pos(width() / 2, height() / 2 - 250),
-        anchor("center"),
-    ]);
+//     let usernameText = add([
+//         text("Username:", 8),
+//         pos(width() / 2, height() / 2 - 250),
+//         anchor("center"),
+//     ]);
 
-    let password = add([
-        text("", 8),
-        pos(width() / 2, height() / 2),
-        anchor("center"),
-    ]);
+//     let password = add([
+//         text("", 8),
+//         pos(width() / 2, height() / 2),
+//         anchor("center"),
+//     ]);
 
-    let passwordText = add([
-        text("Password:", 8),
-        pos(width() / 2, height() / 2 - 50),
-        anchor("center"),
-    ]);
+//     let passwordText = add([
+//         text("Password:", 8),
+//         pos(width() / 2, height() / 2 - 50),
+//         anchor("center"),
+//     ]);
 
-    let passwordVariable = ""
+//     let passwordVariable = ""
 
-    let loginCursor = "username"
+//     let loginCursor = "username"
 
-    onKeyPress((char) => { // Listens for key presses
-        let allowedCharacters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', "space"]
-        // If the user presses enter, switch between password and username fields
-        if (char === "enter" || char === "tab") {
-            if (loginCursor === "password") loginCursor = "username"
-            else loginCursor = "password"
-            play("knocked_down")
-        }
-        // If the user presses backspace, remove the last character
-        else if (char === "backspace") {
-            play("enemyPunch1")
-            if (loginCursor === "username") {
-                username.text = username.text.slice(0, -1);
-            } else if (loginCursor === "password") {
-                password.text = password.text.slice(0, -1);
-                passwordVariable = passwordVariable.slice(0, -1);
-            }
-        }
+//     onKeyPress((char) => { // Listens for key presses
+//         let allowedCharacters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', "space"]
+//         // If the user presses enter, switch between password and username fields
+//         if (char === "enter" || char === "tab") {
+//             if (loginCursor === "password") loginCursor = "username"
+//             else loginCursor = "password"
+//             play("knocked_down")
+//         }
+//         // If the user presses backspace, remove the last character
+//         else if (char === "backspace") {
+//             play("enemyPunch1")
+//             if (loginCursor === "username") {
+//                 username.text = username.text.slice(0, -1);
+//             } else if (loginCursor === "password") {
+//                 password.text = password.text.slice(0, -1);
+//                 passwordVariable = passwordVariable.slice(0, -1);
+//             }
+//         }
 
-        else if (allowedCharacters.includes(char)) {
-            if (char === "space") char = " "
-            if (loginCursor === "username") {
-                if (username.text.length === 10) return play("bad")
-                play("beep")
-                username.text += char;
-                username.pos = vec2(width() / 2, height() / 2 - 200)
-            } else if (loginCursor === "password") {
-                if (password.text.length === 10) return play("bad")
-                play("beep")
-                password.text += "*";
-                passwordVariable += char;
-                password.pos = vec2(width() / 2, height() / 2)
-            }
-        }
-    });
+//         else if (allowedCharacters.includes(char)) {
+//             if (char === "space") char = " "
+//             if (loginCursor === "username") {
+//                 if (username.text.length === 10) return play("bad")
+//                 play("beep")
+//                 username.text += char;
+//                 username.pos = vec2(width() / 2, height() / 2 - 200)
+//             } else if (loginCursor === "password") {
+//                 if (password.text.length === 10) return play("bad")
+//                 play("beep")
+//                 password.text += "*";
+//                 passwordVariable += char;
+//                 password.pos = vec2(width() / 2, height() / 2)
+//             }
+//         }
+//     });
 
-    addButton("Signup", { x: 320, y: 80 }, vec2((width() / 2) + 180, (height() / 2) + 320), async () => {
-        let valid = true
-        for (let i = 0; i < userAccountStats.length; i++) {
-            if (username.text === userAccountStats[i].username) {
-                valid = false;
-                break;
-            }
-        }
-        if (username.text.length === 0 || passwordVariable.length === 0) valid = false
+//     addButton("Signup", { x: 320, y: 80 }, vec2((width() / 2) + 180, (height() / 2) + 320), async () => {
+//         let valid = true
+//         for (let i = 0; i < userAccountStats.length; i++) {
+//             if (username.text === userAccountStats[i].username) {
+//                 valid = false;
+//                 break;
+//             }
+//         }
+//         if (username.text.length === 0 || passwordVariable.length === 0) valid = false
 
-        if (valid === false) {
-            play("enemyDeath2")
-            let titleText = add([
-                text("Invalid Signup Detais.", 8),
-                color(255, 0, 0),
-                pos(width() / 2, height() / 2 - 320),
-                anchor("center"),
-            ]);
-        }
-        if (valid === true) {
-            accountStats = {
-                "username": username.text,
-                "password": passwordVariable,
-                "enemies_defeated": 0,
-                "hardest_good": -1,
-                "infinity_0_highest": 0,
-                "infinity_1_highest": 0,
-                "infinity_2_highest": 0,
-                "infinity_3_highest": 0,
-                "infinity_4_highest": 0,
-                "stage_select": false,
-                "infinity_mode": false
-            }
-            loggedIn = true
-            userAccountStats.push(accountStats)
-            play("button")
-            go("starting_menu")
-        }
-    })
-
-
-    addButton("Login", { x: 320, y: 80 }, vec2((width() / 2) + -180, (height() / 2) + 320), async () => {
-        for (let i = 0; i < userAccountStats.length; i++) {
-            if (username.text === userAccountStats[i].username && passwordVariable === userAccountStats[i].password) {
-                loggedIn = true;
-                accountStats = userAccountStats[i]
-                break;
-            }
-        }
+//         if (valid === false) {
+//             play("enemyDeath2")
+//             let titleText = add([
+//                 text("Invalid Signup Detais.", 8),
+//                 color(255, 0, 0),
+//                 pos(width() / 2, height() / 2 - 320),
+//                 anchor("center"),
+//             ]);
+//         }
+//         if (valid === true) {
+//             accountStats = {
+//                 "username": username.text,
+//                 "password": passwordVariable,
+//                 "enemies_defeated": 0,
+//                 "hardest_good": -1,
+//                 "infinity_0_highest": 0,
+//                 "infinity_1_highest": 0,
+//                 "infinity_2_highest": 0,
+//                 "infinity_3_highest": 0,
+//                 "infinity_4_highest": 0,
+//                 "stage_select": false,
+//                 "boss_rush": false
+//             }
+//             loggedIn = true
+//             userAccountStats.push(accountStats)
+//             play("button")
+//             go("starting_menu")
+//         }
+//     })
 
 
-        if (loggedIn === false) {
-            play("enemyDeath2")
-            add([
-                text("Incorrect Login Details.", 8),
-                color(255, 0, 0),
-                pos(width() / 2, height() / 2 - 320),
-                anchor("center"),
-            ]);
-        }
-
-        if (loggedIn === true) {
-            play("button")
-
-            go("starting_menu")
-
-        }
+//     addButton("Login", { x: 320, y: 80 }, vec2((width() / 2) + -180, (height() / 2) + 320), async () => {
+//         for (let i = 0; i < userAccountStats.length; i++) {
+//             if (username.text === userAccountStats[i].username && passwordVariable === userAccountStats[i].password) {
+//                 loggedIn = true;
+//                 accountStats = userAccountStats[i]
+//                 break;
+//             }
+//         }
 
 
-    })
+//         if (loggedIn === false) {
+//             play("enemyDeath2")
+//             add([
+//                 text("Incorrect Login Details.", 8),
+//                 color(255, 0, 0),
+//                 pos(width() / 2, height() / 2 - 320),
+//                 anchor("center"),
+//             ]);
+//         }
+
+//         if (loggedIn === true) {
+//             play("button")
+
+//             go("starting_menu")
+
+//         }
+
+
+//     })
 
 
 
-})
+// })
 
 
 
