@@ -435,7 +435,7 @@ class Healthbar {
         this.healthbar = null;
         this.healthbarOutline = null;
         this.health = this.maxHealth;
-        if(this.flip && currentRound === 6) return
+        if (this.flip && currentRound === 6) return
         // Draw the healthbar outline
         this.healthbarOutline = add([
             sprite("healthbar"),
@@ -3084,7 +3084,6 @@ scene("stage_three", async (playerTag) => {
         { name: "joseph", yPos: 90 },
         { name: "joseph", yPos: 120 }
     ], 5); // Spawns are capped at 5 at a time
-await spawnWave([
 
     await spawnWave([
         { name: "fadeout" },
@@ -3336,44 +3335,44 @@ scene("stage_five_a", async (playerTag) => {
 
     await spawnWave([
         { name: "wait", time: 3 },
-         { name: "gary", yPos: 50 },
-         { name: "gary", yPos: 100 },
-         { name: "joseph", yPos: 180 },
-         { name: "wait", time: 7 },
-         { name: "andrew", yPos: 50 },
-         { name: "gary", yPos: 150 },
-         { name: "gary", yPos: 200 },
-         { name: "wait", time: 7 },
-         { name: "david", yPos: 25 },
-         { name: "gary", yPos: 90 },
-         { name: "david", yPos: 125 },
-         { name: "wait", time: 7 },
-         { name: "david", yPos: 75 },
-         { name: "david", yPos: 150 },
-         { name: "david", yPos: 275 },
-         { name: "wait", time: 10 },
-         { name: "joseph", yPos: 10 },
-         { name: "joseph", yPos: 40 },
-         { name: "joseph", yPos: 90 },
-         { name: "joseph", yPos: 280 },
-         { name: "wait", time: 10 },
-         { name: "david", yPos: 60 },
-         { name: "wait", time: 2 },
-         { name: "david", yPos: 90 },
-         { name: "wait", time: 2 },
-         { name: "david", yPos: 60 },
-         { name: "wait", time: 2 },
-         { name: "david", yPos: 90 },
-         { name: "wait", time: 2 },
-         { name: "david", yPos: 60 },
-         { name: "wait", time: 2 },
-         { name: "david", yPos: 90 },
-         { name: "wait", time: 2 },
-         { name: "david", yPos: 60 },
-         { name: "wait", time: 2 },
-         { name: "david", yPos: 90 },
-         { name: "joseph", yPos: 60 },
-         { name: "joseph", yPos: 90 },
+        { name: "gary", yPos: 50 },
+        { name: "gary", yPos: 100 },
+        { name: "joseph", yPos: 180 },
+        { name: "wait", time: 7 },
+        { name: "andrew", yPos: 50 },
+        { name: "gary", yPos: 150 },
+        { name: "gary", yPos: 200 },
+        { name: "wait", time: 7 },
+        { name: "david", yPos: 25 },
+        { name: "gary", yPos: 90 },
+        { name: "david", yPos: 125 },
+        { name: "wait", time: 7 },
+        { name: "david", yPos: 75 },
+        { name: "david", yPos: 150 },
+        { name: "david", yPos: 275 },
+        { name: "wait", time: 10 },
+        { name: "joseph", yPos: 10 },
+        { name: "joseph", yPos: 40 },
+        { name: "joseph", yPos: 90 },
+        { name: "joseph", yPos: 280 },
+        { name: "wait", time: 10 },
+        { name: "david", yPos: 60 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 90 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 60 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 90 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 60 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 90 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 60 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 90 },
+        { name: "joseph", yPos: 60 },
+        { name: "joseph", yPos: 90 },
         { name: "joseph", yPos: 120 },
     ], 5); // Spawns are capped at 5 at a time
 
@@ -3408,7 +3407,7 @@ scene("stage_five_b", async (playerTag) => {
         go("stage_one", playerTag)
     })
 
-await spawnWave([
+    await spawnWave([
         { name: "gary", yPos: 50 }, // Spawn Gary at y position 50
         { name: "gary", yPos: 100 }, // Spawn Gary at y position 100
         { name: "joseph", yPos: 180 }, // Spawn Joseph at y position 180
