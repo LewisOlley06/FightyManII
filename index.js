@@ -866,7 +866,7 @@ async function enableEnemyAI() {
                     if (enemyPos.x < playerPos.x) horizontalDirection = "left"; // Checks whether the entity is to the left of the player
                     if (enemyPos.x >= playerPos.x) horizontalDirection = "right"; // Checks whether the entity is to the right of the player
 
-
+                    play("flamethrower")
                     await tween(
                         enemy.worldPos(),
                         (horizontalDirection === "left") ? vec2(player.worldPos().x - 100, player.worldPos().y) : vec2(player.worldPos().x + 100, player.worldPos().y),
@@ -875,7 +875,7 @@ async function enableEnemyAI() {
                         easings.linear
                     )
                     await performAttack(enemy, "cross")
-                    fightyManAttack = 1
+                    fightyManAttack = getRandomNumber(1, 5)
                     enemy.attackCooldown = false
 
                 }
