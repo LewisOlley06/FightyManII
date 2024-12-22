@@ -1857,7 +1857,7 @@ async function destroyHitbox(hitbox) {
 async function performAttack(entity, attackName) {
     let attackHitbox = null // Stores the hitbox of the attack
     if (attackName === "jab") {
-        if (entity.curAnim() == attackName) return // Stops the jab animation from playing twice
+        if (entity.curAnim() === attackName) return // Stops the jab animation from playing twice
         entity.play(attackName) // Plays the attack animation
         await wait(0.05, () => {
             if (!isKeyDown("z") && entity.is("player")) return // Stops the cross hitbox from spawning if the player stops holding the key
@@ -1878,12 +1878,12 @@ async function performAttack(entity, attackName) {
             entity.play("flarePunch")
         }// Stops the cross animation from playing twice
         else {
-            if (entity.curAnim() === attackName) return
+            if (entity.curAnim() === attackName || entity.curAnim() === "jab") return
             entity.play(attackName)
         }
         // Plays the walking animation by default
         await wait(0.15, () => {
-            if (!isKeyDown("x") && entity.is("player")) return // Stops the cross hitbox from spawning if the player stops holding the key
+            if (!isKeyDown("x") && entity.is("player") && !(entity.curAnim() === "jab")) return // Stops the cross hitbox from spawning if the player stops holding the key
             attackHitbox = entity.add([
                 rect(15, 10),
                 pos(entity.flipX ? -6 : 6, 0),
@@ -2787,16 +2787,6 @@ scene("stage_one", async (playerTag) => { // Opens up a new scene for level one 
         { name: "david", yPos: 300 }
     ], 4); // Spawns are capped at 4 at a time
 
-    await spawnWave([
-        { name: "fadeout" },
-        { name: "wait", time: 1 },
-        { name: "venus", yPos: 90 },
-        { name: "gary", yPos: 200 },
-        { name: "gary", yPos: 200 },
-        { name: "gary", yPos: 200 },
-        { name: "gary", yPos: 200 },
-        { name: "gary", yPos: 200 },
-    ], 2)
 
     const roundEnd = onUpdate(async () => {
         if (!get("enemy").length) {
@@ -3309,6 +3299,13 @@ scene("stage_four", async (playerTag) => {
         { name: "joseph", yPos: 120 }
     ], 10); // Spawns are capped at 5 at a time
 
+    await spawnWave([
+        { name: "fadeout" },
+        { name: "wait", time: 1 },
+        { name: "venus", yPos: 90 },
+    ], 1)
+
+
     const roundEnd = onUpdate(async () => {
         if (!get("enemy").length) {
             roundEnd.cancel()
@@ -3472,14 +3469,13 @@ scene("boss_rush", async (playerTag) => {
     await spawnWave([
         { name: "fadeout" },
         { name: "wait", time: 1 },
-        { name: "venus", yPos: 90 },
-        { name: "fadeout" },
-        { name: "wait", time: 1 },
         { name: "grigory", yPos: 90 },
         { name: "fadeout" },
         { name: "wait", time: 1 },
         { name: "hodson", yPos: 90 },
         { name: "fadeout" },
+        { name: "wait", time: 1 },
+        { name: "venus", yPos: 90 },
         { name: "wait", time: 1 },
         { name: "fightyMan", yPos: 90 },
     ], 1); // Spawns are capped at 1 at a time
@@ -3941,19 +3937,19 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
     let difficultyText = add([
         text("Normal Difficulty", { align: "center", size: 24 }),
         color(255, 255, 255),
-        pos(vec2((width() / 2) + 615, (height() / 2) + 180)),
+        pos(vec2((width() / 2), (height() / 2) + 180)),
         anchor("center"),
     ])
     stopMusic(currentSong)
     setCursor("default")
     setBackground(255, 255, 255);
 
-    addButton("Main Game", { x: 290, y: 80 }, vec2(width() / 2 + 480, (height() / 2) + 64), () => {
+    addButton("Main Game", { x: 290, y: 80 }, vec2(width() / 2, (height() / 2) - 50), () => {
         play("button")
         gameMode = "main"
         go("character_select")
     })
-    addButton("Boss Rush", { x: 290, y: 80 }, vec2(width() / 2 + 780, (height() / 2) + 64), async () => {
+    addButton("Boss Rush", { x: 290, y: 80 }, vec2(width() / 2, (height() / 2) + 64), async () => {
         if (accountStats.boss_rush === false) {
             play("bad")
             if (menuButtonPressed === true) return
@@ -3978,14 +3974,14 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
         }
     })
 
-    addButton("<", { x: 80, y: 80 }, vec2((width() / 2) + 330, (height() / 2) + 180), () => {
+    addButton("<", { x: 80, y: 80 }, vec2((width() / 2) - 285, (height() / 2) + 180), () => {
         if (difficulty === 0) return play("bad");
         play("beep")
         difficulty--;
         difficultyText.text = difficultyNames[difficulty];
     })
 
-    addButton(">", { x: 80, y: 80 }, vec2((width() / 2) + 900, (height() / 2) + 180), () => {
+    addButton(">", { x: 80, y: 80 }, vec2((width() / 2) + 285, (height() / 2) + 180), () => {
         if (difficulty === difficultyNames.length - 1) return play("bad");
         play("beep")
         difficulty++;
@@ -4029,7 +4025,7 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
     //     })
     // }
 
-    addButton("Stage Select", { x: 290, y: 80 }, vec2((width() / 2) + 630, (height() / 2) + 320), async () => {
+    addButton("Stage Select", { x: 290, y: 80 }, vec2((width() / 2), (height() / 2) + 320), async () => {
         if (accountStats.stage_select === false) {
             play("bad")
             if (menuButtonPressed === true) return
