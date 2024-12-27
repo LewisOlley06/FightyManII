@@ -29,7 +29,8 @@ loadSound("stage_select", "/sounds/stage_select.mp3")
 loadSound("stage_one", "/sounds/Stage1.mp3")
 loadSound("stage_two", "/sounds/Stage2.mp3")
 loadSound("stage_three", "/sounds/Stage3.mp3")
-loadSound("stage_four", "/sounds/Stage4.mp3")
+loadSound("stage_four", "/sounds/Stage4-1.mp3")
+loadSound("stage_four_elevator", "/sounds/Stage4-2.mp3")
 loadSound("Boss", "/sounds/Boss.mp3")
 loadSound("stage_five_a", "/sounds/Stage5a.mp3")
 loadSound("stage_five_b", "/sounds/Stage5b.mp3")
@@ -58,6 +59,7 @@ for (let i = 1; i <= 4; i++) { loadSound(`punch${i}`, `/sounds/FX/punch${i}.wav`
 loadSprite("menu_bg", `/sprites/backgrounds/menu.png`)
 loadSprite("johnny_standing1", `/sprites/johnny/standing1.png`)
 loadSprite("fireProj", `/sprites/enemies/fireProjectile.png`)
+loadSprite("ladroDropping", `/sprites/enemies/dropping.png`)
 loadSprite("goSign", `/sprites/ui/goSign.png`)
 loadSprite("bullet", `/sprites/enemies/bullet.png`)
 loadSprite("staple", `/sprites/enemies/staple.png`)
@@ -69,6 +71,7 @@ loadSprite("fightyManIcon", "/sprites/ui/fightyMan.png")
 loadSprite("hodsonIcon", "/sprites/ui/hodson.png")
 loadSprite("grigoryIcon", "/sprites/ui/grigory.png")
 loadSprite("venusIcon", "/sprites/ui/venus.png")
+loadSprite("ladroIcon", "/sprites/ui/ladro.png")
 loadSprite("stage_select", "/sprites/backgrounds/Stage Select.png")
 loadSprite("chevron", "/sprites/ui/chevron.png")
 loadSprite("healthbar", "/sprites/ui/healthbar.png")
@@ -79,6 +82,8 @@ loadSprite("stage_two_bg", "/sprites/backgrounds/Stage 2-1.png")
 loadSprite("stage_two_bg2", "/sprites/backgrounds/Stage2-2.png")
 loadSprite("stage_two_bg3", "/sprites/backgrounds/Stage 2-3.png")
 loadSprite("stage_three_bg", "/sprites/backgrounds/Stage3.png")
+loadSprite("stage_four_1", "/sprites/backgrounds/Stage4-1.png")
+loadSprite("stage_four_2", "/sprites/backgrounds/Stage4-2.png")
 loadSprite("stage_four_bg2", "/sprites/backgrounds/Stage4BG.png")
 loadSprite("stage_four_bg", "/sprites/backgrounds/Stage4FG.png")
 loadSprite("stage_four_side", "/sprites/backgrounds/Stage4Side.png")
@@ -137,6 +142,19 @@ loadSpriteAtlas("/sprites/enemies/hodson.png", {
         }
     }
 })
+loadSpriteAtlas("/sprites/enemies/ladro.png", {
+    'ladro': {
+        x: 0,
+        y: 0,
+        width: 96,
+        height: 32,
+        sliceX: 3,
+        anims: {
+            'idle': { from: 0, to: 1, loop: true, speed: 8 },
+            'downed': { from: 2, to: 2, loop: false },
+        }
+    }
+})
 loadSpriteAtlas("/sprites/johnny/johnnySpriteSheet.png", {
     "johnny's Twin Brother": {
         x: 0,
@@ -164,6 +182,18 @@ loadSpriteAtlas("/sprites/enemies/venus.png", {
         sliceX: 6,
         anims: {
             'idle': { from: 0, to: 5, loop: true, speed: 6 },
+        }
+    }
+})
+loadSpriteAtlas("/sprites/backgrounds/round1Bg.png", {
+    'round1Background': {
+        x: 0,
+        y: 0,
+        width: 1152,
+        height: 108,
+        sliceX: 6,
+        anims: {
+            'idle': { from: 0, to: 5, loop: true, speed: 3 },
         }
     }
 })
@@ -404,7 +434,7 @@ let playerControlEvents = {
 
 let stageFourBackgroundEntity = null // Stores the object of the moving background in Stage 4
 let bgMoving = false // Stores the boolean value of whether the background is moving in Stage 2
-let difficultyMultiplier = null // Stores the value of the enemy difficulty multiplier
+let difficultyMultiplier = 0.9 // Stores the value of the enemy difficulty multiplier
 
 let selectedCharacter = null // Stores the value of the selected character, used for round starts
 let fightyManAttack = 2 // Stores the default value of the Final Boss' first attack
@@ -510,6 +540,7 @@ class Healthbar {
         if (this.topTween) this.topTween.finish();
 
         this.health -= amount;
+        if (this.health > this.maxHealth) this.health = this.maxHealth
         let newWidth = (this.health / this.maxHealth) * 386;
         if (newWidth < 0) newWidth = 0;
 
@@ -534,6 +565,7 @@ class Healthbar {
         if (this.topTween) this.topTween.finish();
 
         this.health += amount;
+        if (this.health > this.maxHealth) this.health = this.maxHealth
         let newWidth = (this.health / this.maxHealth) * 386;
         if (newWidth < 0) newWidth = 0;
 
@@ -638,7 +670,7 @@ async function enableEnemyAI() {
     enemyAIBasic = onUpdate(() => {
         // Gets all entities with the "enemy" tag
         let enemies = get("enemy");
-        let bosses = ["grigory", "fightyMan", "venus", "hodson"]
+        let bosses = ["ladro", "grigory", "fightyMan", "venus", "hodson"]
         enemies.forEach(async enemy => {
             if (enemy.dead) return // Stops the function if the enemy is dead
             // Get the player's position
@@ -655,8 +687,8 @@ async function enableEnemyAI() {
             if (enemyPos.x >= playerPos.x) horizontalDirection = "right"; // Checks whether the entity is to the right of the player
             if (enemyPos.y < playerPos.y) verticalDirection = "down"; // Checks whether the entity is to the lower of the player
             if (enemyPos.y >= playerPos.y) verticalDirection = "up"; // Checks whether the entity is to the upper of the player
-            if (horizontalDirection === "left" && (enemy.attackType !== "venus")) enemy.flipX = false
-            if (horizontalDirection === "right" && (enemy.attackType !== "venus")) enemy.flipX = true
+            if (horizontalDirection === "left" && (enemy.attackType !== "venus")) enemy.flipX = (enemy.attackType === "ladro") ? true : false
+            if (horizontalDirection === "right" && (enemy.attackType !== "venus")) enemy.flipX = (enemy.attackType === "ladro") ? false : true
 
 
             const distance = Math.sqrt(Math.pow(enemyPos.x - playerPos.x, 2) + Math.pow(enemyPos.y - playerPos.y, 2)) // Calculates the distance between the player and the enemy
@@ -722,6 +754,7 @@ async function enableEnemyAI() {
                         (pos) => enemy.pos = pos,
                         easings.linear
                     )
+
                     enemy.play("idle")
                     await wait(1.5 / difficultyMultiplier / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
                     fightyManAttack = getRandomNumber(3, 6)
@@ -866,7 +899,7 @@ async function enableEnemyAI() {
                     if (enemyPos.x < playerPos.x) horizontalDirection = "left"; // Checks whether the entity is to the left of the player
                     if (enemyPos.x >= playerPos.x) horizontalDirection = "right"; // Checks whether the entity is to the right of the player
 
-                    play("flamethrower")
+                    play("fireShort")
                     await tween(
                         enemy.worldPos(),
                         (horizontalDirection === "left") ? vec2(player.worldPos().x - 100, player.worldPos().y) : vec2(player.worldPos().x + 100, player.worldPos().y),
@@ -874,6 +907,7 @@ async function enableEnemyAI() {
                         (pos) => enemy.pos = pos,
                         easings.linear
                     )
+                    play("flamethrower")
                     await performAttack(enemy, "cross")
                     fightyManAttack = getRandomNumber(1, 5)
                     enemy.attackCooldown = false
@@ -1106,8 +1140,6 @@ async function enableEnemyAI() {
                 }
                 enemy.attackCooldown = false
             }
-
-
 
 
 
@@ -1559,20 +1591,96 @@ async function enableEnemyAI() {
                 await wait(0.5 / difficultyMultiplier)
                 enemy.attackCooldown = false
             }
+            (async function mainLoop() {
+                if (enemy.attackType === "ladro" && !enemy.dead) { // AI for the Ladro boss
+                    enemy.collisionIgnore.push("enemy"); // Ignore all hitbox collisions for this boss.
 
-        }
+                    if (enemy.attackType === "ladro" && !enemy.spawned) {
+                        t = 0;
+                        diveTimer = 0;
+                        attackCooldown = false;
+                        fireballTimer = 0; // Initialize the fireball timer
+                        healthDifficultyMultiplier = 1 + (enemy.healthbar.maxHealth - enemy.hp()) / enemy.healthbar.maxHealth;
+                        enemy.spawned = true;
+                    }
+
+                    // Update figure-eight position
+                    if (!enemy.attackCooldown) {
+                        healthDifficultyMultiplier = 1 + (enemy.healthbar.maxHealth - enemy.hp()) / enemy.healthbar.maxHealth;
+                        t += 3 * dt(); // Adjusted speed increment by delta time
+                        enemy.pos.x = (0.5 * width()) + (0.35 * width() * Math.sin(t)); // Centered on X-axis
+                        enemy.pos.y = (0.25 * height()) + (0.08 * height() * Math.sin(2 * t)); // Moved down by 15% of screen height
+
+                        // Update fireball timer
+                        fireballTimer += dt(); // Increment fireball timer by delta time
+
+                        // Check if it's time to fire a fireball
+                        if (fireballTimer >= 2 / (healthDifficultyMultiplier * healthDifficultyMultiplier) / difficultyMultiplier) {
+                            fireballTimer = 0; // Reset fireball timer
+
+                            // Spawn fireball projectile
+                            spawnProjectile({
+                                spriteName: "ladroDropping",
+                                scaleAmount: 10,
+                                hitboxScale: 0.5,
+                                health: 999,
+                                attributes: {
+                                    strength: 2 * healthDifficultyMultiplier,
+                                    attackType: "fireball",
+                                }
+                            }, enemy.pos.clone(), "down", 2, false, true);
+                        }
+                    }
+
+                    // Update dive timer
+                    diveTimer += dt(); // Increment dive timer by delta time (time since last frame)
+
+                    // Check if it's time to dive
+                    if (diveTimer >= 10 && !attackCooldown) { // Dive every 6 seconds
+                        enemy.attackCooldown = true;
+                        diveTimer = 0; // Reset dive timer
+
+                        let startPos = enemy.pos.clone();
+                        let endPos = player.pos.clone();
+
+                        await tween(
+                            startPos,
+                            endPos,
+                            1,
+                            (pos) => enemy.pos = pos,
+                            easings.easeInExpo
+                        );
+                        performAttack(enemy, "cross");
+                        await wait(1);
+                        await tween(
+                            enemy.pos,
+                            startPos,
+                            1,
+                            (pos) => enemy.pos = pos,
+                            easings.easeInOutCubic
+                        );
+
+                        enemy.attackCooldown = false;
+                    }
+                }
+            })();
 
 
 
-        )
+
+
+
+        })
     }
-
-
-
-
-
     )
 }
+
+
+
+
+
+
+
 
 // Variables for music handling
 const bpm = 128;
@@ -1695,7 +1803,7 @@ function stopMusic(audioContext) {
     audioContext.seek(duration) // Seeks to the end of the audio
 }
 
-async function toggleDarkOverlay(isRoundOne = false) {
+async function toggleDarkOverlay(isRoundOne = false, blackout = false) {
     // Make the dark overlay fade in if null and fade out if not null
     if (darkOverlay === null) {
 
@@ -1703,11 +1811,11 @@ async function toggleDarkOverlay(isRoundOne = false) {
             rect(width(), height()),
             opacity(isRoundOne ? 1 : 0),
             color(0, 0, 0),
-            z(25)
-        ])
+            z((blackout ? 50 : 25))
+        ]);
         if (!isRoundOne) {
-            for (let i = 0; i < 18; i++) { // 18 * 0.05 = 0.9
-                await wait(0.02, () => darkOverlay.opacity += 0.05)
+            for (let i = 0; i < (blackout ? 20 : 18); i++) {
+                await wait(0.02, () => darkOverlay.opacity += 0.05);
             }
         } else {
             let topDarkOverlay = add([
@@ -1715,8 +1823,8 @@ async function toggleDarkOverlay(isRoundOne = false) {
                 opacity(1),
                 color(0, 0, 0),
                 z(30)
-            ])
-            await wait(2.5)
+            ]);
+            await wait(2.5);
             // Over 3 seconds, fade out the top dark overlay
             await tween(
                 topDarkOverlay.opacity,
@@ -1724,17 +1832,18 @@ async function toggleDarkOverlay(isRoundOne = false) {
                 3,
                 (op) => topDarkOverlay.opacity = op,
                 easings.easeInCubic
-            )
+            );
         }
     } else {
-        darkOverlay.opacity = 1
-        for (let i = 0; i < 18; i++) {
-            await wait(0.02, () => darkOverlay.opacity -= 0.05)
+        darkOverlay.opacity = 1;
+        for (let i = 0; i < (blackout ? 20 : 18); i++) {
+            await wait(0.02, () => darkOverlay.opacity -= 0.05);
         }
-        await wait(0.02, () => darkOverlay.destroy())
-        darkOverlay = null
+        await wait(0.02, () => darkOverlay.destroy());
+        darkOverlay = null;
     }
 }
+
 
 // Inital pos is either left or right. yPos is the y position of the text
 // The text will first slide in fast, then slow down, then slide out fast
@@ -1876,7 +1985,8 @@ async function performAttack(entity, attackName) {
         if (entity.attackType === "fightyMan") {
             if (entity.curAnim() === "flarePunch") return
             entity.play("flarePunch")
-        }// Stops the cross animation from playing twice
+        }
+        else if (entity.attackType === "ladro") { }
         else {
             if (entity.curAnim() === attackName || entity.curAnim() === "jab") return
             entity.play(attackName)
@@ -1886,7 +1996,7 @@ async function performAttack(entity, attackName) {
             if (!isKeyDown("x") && entity.is("player") && !(entity.curAnim() === "jab")) return // Stops the cross hitbox from spawning if the player stops holding the key
             attackHitbox = entity.add([
                 rect(15, 10),
-                pos(entity.flipX ? -6 : 6, 0),
+                pos(entity.attackType === "ladro" ? 0 : (entity.flipX ? -6 : 6), 0),
                 area({ collisionIgnore: entity.is("player") ? ["player"] : ["enemy", "boss"] }), // Stops the player hurting themselves
                 anchor("center"),
                 opacity(0),
@@ -1947,7 +2057,7 @@ async function performAttack(entity, attackName) {
             if (attackName === "cross") {
                 if (character.dead) continue;
                 play(`punch${getRandomNumber(3, 4)}`) // Plays a random punch sound effect
-                character.hurt(12 * (1 - character.defense)) // Hurts the character by 12 health
+                character.hurt(((entity.attackType === "ladro") ? 20 : 12) * (1 - character.defense)) // Hurts the character by 12 health
                 if (character.healthbar) character.healthbar.hurt(12 * (1 - character.defense)) // Update the healthbar visual
             }
             if (attackName === "fireShield") {
@@ -1970,6 +2080,11 @@ async function checkDeath(character, attackHitbox) {
             character.collisionIgnore = character.collisionIgnore.filter(item => item !== "enemy")
         }
         else {
+            playerChar = get("player")[0]
+            if (selectedCharacter === "johnny's Twin Brother") {
+                playerChar.healthbar.hurt(-3)
+                playerChar.hurt(-3)
+            }
             character.collisionIgnore = character.collisionIgnore.filter(item => item !== "player")
         }
         attackHitbox?.destroy()
@@ -1978,9 +2093,12 @@ async function checkDeath(character, attackHitbox) {
         character.collisionIgnore.push("enemy") // Stops the enemy from colliding with the enemy
         // Remove the hitbox after the animation is done
         if (character.dead) return;
-        if (character.attackType !== "venus" && character.attackType !== "fightyMan" && character.attackType !== "hodson") { character.play("downed") }
+        bosses = ["venus", "fightyMan", "hodson", "ladro", "grigory"]
+        if (!bosses.includes(character.attackType)) { character.play("downed") }
         if (character.attackType === "fightyMan") character.play("fireShield")
         if (character.attackType === "hodson") character.play("idle")
+        if (character.attackType === "ladro") character.play("downed")
+        if (character.attackType === "grigory") character.play("downed")
         tween(
             character.worldPos(),
             vec2(character.worldPos().x + (character.flipX ? 150 : -150), character.worldPos().y),
@@ -2003,12 +2121,12 @@ async function checkDeath(character, attackHitbox) {
         await tween(
             character.opacity,
             0,
-            character.attackType === "grigory" || character.attackType === "fightyMan" || character.attackType === "venus" || character.attackType === "hodson" ? 0.35 : 3,
+            bosses.includes(character.attackType) ? 0.35 : 3,
             (op) => character.opacity = op,
             easings.easeInCubic
         )
         await wait(0.5, () => character.destroy())
-        if (gameMode === "boss_rush" && (character.attackType === "grigory" || character.attackType === "fightyMan" || character.attackType === "venus" || character.attackType === "hodson")) {
+        if (gameMode === "boss_rush" && bosses.includes(character.attackType)) {
             character.healthbar.destroy()
         }
     }
@@ -2023,6 +2141,9 @@ function spawnEntity(options, ySpawn) { // Summons an entity at a specific point
         spawnX = 2000;
     }
     if (currentRound === 4) {
+        ySpawn = getRandomNumber(0, 20)
+    }
+    if (currentRound === 4.5) {
         spawnX = chance(0.5) === true ? 600 : 1300
         ySpawn = getRandomNumber(-240, 260)
     }
@@ -2252,6 +2373,16 @@ function getEnemyAttributes(entityName, currentRound, difficulty) {
             strength: 1.7 * difficultyMultiplier,
             attackType: "fightyMan",
         }
+    } else if (entityName === "ladro") {
+        enemyAttributes = {
+            health: 120 * difficultyMultiplier,
+            healthbar: 120 * difficultyMultiplier,
+            aggression: 60 * difficultyMultiplier,
+            speed: 7 * difficultyMultiplier,
+            weight: 2,
+            strength: 1.7 * difficultyMultiplier,
+            attackType: "ladro",
+        }
     } else if (entityName === "hodson") {
         enemyAttributes = {
             health: 180 * difficultyMultiplier,
@@ -2261,6 +2392,16 @@ function getEnemyAttributes(entityName, currentRound, difficulty) {
             weight: 2,
             strength: 2.2 * difficultyMultiplier,
             attackType: "hodson",
+        }
+    } else if (entityName === "bossGary") {
+        enemyAttributes = {
+            health: 240 * difficultyMultiplier,
+            healthbar: 240 * difficultyMultiplier,
+            aggression: 20 * difficultyMultiplier,
+            speed: 9 * difficultyMultiplier,
+            weight: 2,
+            strength: 0.8 * difficultyMultiplier,
+            attackType: "bossGary",
         }
     } else if (entityName === "grigory") {
         enemyAttributes = {
@@ -2401,6 +2542,26 @@ async function spawnFightyMan(zSpawn) {
     startFinalBossMusic(() => fightyMan.attributes);
     fightyMan.play("idle")
 }
+async function spawnLadro(zSpawn) {
+    let maxHealth = 120 * difficultyMultiplier
+    const ladro = spawnEntity({
+        spriteName: "ladro",
+        scaleAmount: 7.5,
+        hitboxScale: 0.5,
+        attributes: getEnemyAttributes("ladro", currentRound, difficulty),
+        tag: "enemy",
+        healthbar: new Healthbar({
+            text: "Ladro",
+            icon: "ladroIcon",
+            maxHealth: maxHealth,
+            position: vec2(1300, -100),
+            color: rgb(255, 0, 0),
+            flip: true
+        })
+    }, zSpawn)
+    currentSong = play("Boss", { loop: true }, { volume: globalVolume })
+    ladro.play("idle")
+}
 async function spawnHodson(zSpawn) {
     let maxHealth = 180 * difficultyMultiplier
     const hodson = spawnEntity({
@@ -2455,6 +2616,9 @@ async function spawnWave(enemyQueue, entityCap) {
         } else if (item.name === "hodson") {
             spawnHodson(item.yPos);
             console.log(`Spawned ${item.name} (${enemyQueue.length} left)`)
+        } else if (item.name === "ladro") {
+            spawnLadro(item.yPos);
+            console.log(`Spawned ${item.name} (${enemyQueue.length} left)`)
         } else if (item.name === "wait") {
             await wait(item.time);
             console.log(`Spawned ${item.name} (${enemyQueue.length} left)`)
@@ -2485,8 +2649,8 @@ function registerPlayerControls(player) {
         if (!playerControlEnabled) return // Stops the player from moving if the controls are disabled (e.g. during an attack)
         if ((isKeyDown("left") && isKeyDown("right"))) return player.play("idle") // Stops the player from moving if conflicting keys are pressed
         player.flipX = true // Flips the sprite horizontally
-        if (currentRound !== 4 && player.worldPos().x < 100) return // Stops player from moving offscreen
-        if (currentRound === 4 && player.worldPos().x < 600) return // Stops player from moving offscreen
+        if (currentRound !== 4.5 && player.worldPos().x < 100) return // Stops player from moving offscreen
+        if (currentRound === 4.5 && player.worldPos().x < 600) return // Stops player from moving offscreen
         player.move(-350 * player.speed, 0)
         if (player.curAnim() == "walking") return // Stops the walking animation from playing twice
         player.play("walking") // Plays the walking animation by default
@@ -2502,8 +2666,8 @@ function registerPlayerControls(player) {
         if ((isKeyDown("left") && isKeyDown("right"))) return player.play("idle") // Stops the player from moving if conflicting keys are pressed
 
         player.flipX = false // Flips the sprite horizontally
-        if (currentRound !== 4 && player.worldPos().x > width() - 100) return
-        if (currentRound === 4 && player.worldPos().x > width() - 600) return
+        if (currentRound !== 4.5 && player.worldPos().x > width() - 100) return
+        if (currentRound === 4.5 && player.worldPos().x > width() - 600) return
         player.move(350 * player.speed, 0)
         if (player.curAnim() == "walking") return // Stops the walking animation from playing twice
         player.play("walking") // Plays the walking animation by default
@@ -2513,8 +2677,8 @@ function registerPlayerControls(player) {
         if (!playerControlEnabled) return // Stops the player from moving if the controls are disabled (e.g. during an attack)
         if ((isKeyDown("up") && isKeyDown("down"))) return player.play("idle") // Stops the player from moving if conflicting keys are pressed
         const yDist = (stageGround.worldPos().y - player.worldPos().y) - 60 // Calculate the distance between the player and the bottom of 2.5d platform
-        if (currentRound !== 4 && yDist > 400) return
-        if (currentRound === 4 && yDist > 600) return
+        if (currentRound !== 4.5 && yDist > 400) return
+        if (currentRound === 4.5 && yDist > 600) return
         player.move(0, -350 * player.speed)
         if (player.curAnim() == "walking") return // Stops the walking animation from playing twice
         player.play("walking") // Plays the walking animation by default
@@ -2524,6 +2688,7 @@ function registerPlayerControls(player) {
         if (!playerControlEnabled) return // Stops the player from moving if the controls are disabled (e.g. during an attack)
         if ((isKeyDown("up") && isKeyDown("down"))) return player.play("idle") // Stops the player from moving if conflicting keys are pressed
         const yDist = (stageGround.worldPos().y - player.worldPos().y) - 60 // Calculate the distance between the player and the bottom of 2.5d platform
+        if (currentRound === 4 && yDist < 250) return
         if (yDist < 64) return // Stops player from moving offscreen
         player.move(0, 350 * player.speed) // Moves the player down
         if (player.curAnim() == "walking") return // Stops the walking animation from playing twice
@@ -2646,6 +2811,7 @@ function registerPlayerControls(player) {
 
 async function levelInit(playerTag, introText, songName, backgrounds) { // Function that runs the common code for all levels
     destroyAll(obj => !obj.is("bg"));
+    difficultyMultiplier = ((currentRound + (4 + difficulty * 2)) / 10)
     if (enemyAIBasic !== null) enemyAIBasic.cancel() // Stops the enemy AI from running
     enableEnemyAI() // Enables enemy AI (movement, attacking, etc.)
     setCursor("default") // Sets the cursor to the default cursor
@@ -2653,13 +2819,19 @@ async function levelInit(playerTag, introText, songName, backgrounds) { // Funct
         stopMusic(currentSong)
         currentSong = play(songName, { loop: true, volume: 0.5 })
     }
-    let playerHP = 100
+    let playerHP = 150
     if (selectedCharacter === "grigory") healthbarIcon = "grigoryIcon"
-    else healthbarIcon = "johnny_hp"
+    else if (selectedCharacter === "johnny's Twin Brother") {
+        playerHP = 75, healthbarIcon = "johnny_hp"
+    }
+    else {
+        healthbarIcon = "johnny_hp"
+        playerHP = 200
+    }
     playerSpeed = selectedCharacter === "grigory" ? 1.5 : 1
     const player = spawnEntity({
         spriteName: selectedCharacter,
-        position: vec2(width() / 2, height() - 200),
+        position: vec2(width() / 2, height() - (currentRound === 4 ? 400 : 200)),
         scaleAmount: 7.5,
         hitboxScale: 0.5,
         z: 26,
@@ -2679,7 +2851,7 @@ async function levelInit(playerTag, introText, songName, backgrounds) { // Funct
         })
     })
     player.play("idle")
-    const isRoundFour = introText.toLowerCase().includes("four")
+    const isRoundFour = introText.toLowerCase().includes("elevator")
 
 
 
@@ -2687,7 +2859,7 @@ async function levelInit(playerTag, introText, songName, backgrounds) { // Funct
 
 
     const isRoundOne = introText.toLowerCase().includes("one") // Checks if the intro text is for round one
-
+    animBackground = false
     if (isRoundFour) {
         const darkBackground = add([
             sprite("stage_four_bg2"),
@@ -2720,16 +2892,24 @@ async function levelInit(playerTag, introText, songName, backgrounds) { // Funct
                 fixed(),
                 z(0)
             ])
+            if (isRoundOne && animBackground === false) {
+                background.play("idle")
+                animBackground = true
+            }
+
         })
+
     }
-    toggleDarkOverlay(isRoundOne) //fade in the dark overlay
-    if (isRoundOne) await wait(4.5) // Wait for 4.5 seconds if it is round one
-    await Promise.all([ //wait for both texts to finish animating
-        //split the intro text into two lines
-        roundText(introText.split(" ")[0], height() / 2 - 96, "left", isRoundOne),
-        roundText(introText.split(" ")[1], height() / 2 + 96, "right", isRoundOne)
-    ])
-    toggleDarkOverlay(isRoundOne) //fade out the dark overlay
+    if (currentRound !== 4.5) {
+        toggleDarkOverlay(isRoundOne) //fade in the dark overlay
+        if (isRoundOne) await wait(4.5) // Wait for 4.5 seconds if it is round one
+        await Promise.all([ //wait for both texts to finish animating
+            //split the intro text into two lines
+            roundText(introText.split(" ")[0], height() / 2 - 96, "left", isRoundOne),
+            roundText(introText.split(" ")[1], height() / 2 + 96, "right", isRoundOne)
+        ])
+        toggleDarkOverlay(isRoundOne) //fade out the dark overlay
+    }
 
     //delete and re-register player controls
     playerControlEvents.keyDown.forEach(keyDownEvent => keyDownEvent.cancel()) // Stops the player from moving
@@ -2739,7 +2919,7 @@ async function levelInit(playerTag, introText, songName, backgrounds) { // Funct
 }
 
 scene("stage_one", async (playerTag) => { // Opens up a new scene for level one of the game
-    await levelInit(playerTag, "Stage One", "stage_one", ["stage_one_sea_bg", "stage_one_pier_bg"])
+    await levelInit(playerTag, "Stage One", "stage_one", ["round1Background", "stage_one_pier_bg"])
     currentRound = 1
     onKeyPress("p", () => {
         go("stage_two", playerTag)
@@ -2787,6 +2967,17 @@ scene("stage_one", async (playerTag) => { // Opens up a new scene for level one 
         { name: "david", yPos: 300 }
     ], 4); // Spawns are capped at 4 at a time
 
+
+    await spawnWave([
+        { name: "fadeout" },
+        { name: "wait", time: 2 },
+        { name: "ladro", yPos: 90 },
+        { name: "gary", yPos: 200 },
+        { name: "gary", yPos: 200 },
+        { name: "gary", yPos: 200 },
+        { name: "gary", yPos: 200 },
+        { name: "gary", yPos: 200 },
+    ], 2)
 
     const roundEnd = onUpdate(async () => {
         if (!get("enemy").length) {
@@ -2898,7 +3089,16 @@ scene("stage_two", async (playerTag) => {
         { name: "joseph", yPos: 120 },
     ], 4) // Spawns are capped at 4 at a time
 
-
+    await spawnWave([
+        { name: "fadeout" },
+        { name: "wait", time: 2 },
+        { name: "grigory", yPos: 90 },
+        { name: "gary", yPos: 200 },
+        { name: "gary", yPos: 200 },
+        { name: "gary", yPos: 200 },
+        { name: "gary", yPos: 200 },
+        { name: "gary", yPos: 200 },
+    ], 2)
 
 
     const moveStart = onUpdate(async () => {
@@ -3097,9 +3297,194 @@ scene("stage_three", async (playerTag) => {
 })
 
 scene("stage_four", async (playerTag) => {
-    await levelInit(playerTag, "Stage Four", "stage_four", ["stage_four_bg"])
-    currentRound = 4
+    const bg1 = add([
+        sprite("stage_four_1"),
+        pos(0, 0),
+        scale(10),
+        z(-1),
+        ("bg"),
+    ]);
+    const bg2 = add([
+        sprite("stage_four_2"),
+        pos(1920, 0),
+        scale(10),
+        z(-1),
+        ("bg")
+    ]);
 
+    await levelInit(playerTag, "Stage Four", "stage_four", [])
+
+
+
+    currentRound = 4
+    onKeyPress("p", () => {
+        clearInterval(oldManSpawn)
+        go("stage_four_elevator", playerTag)
+    })
+
+    await spawnWave([
+        { name: "wait", time: 3 },
+        { name: "gary", yPos: 50 },
+        { name: "gary", yPos: 100 },
+        { name: "wait", time: 1 },
+        { name: "joseph", yPos: 180 },
+        { name: "wait", time: 7 },
+        { name: "andrew", yPos: 50 },
+        { name: "wait", time: 1 },
+        { name: "gary", yPos: 150 },
+        { name: "gary", yPos: 200 },
+        { name: "wait", time: 7 },
+        { name: "david", yPos: 25 },
+        { name: "gary", yPos: 90 },
+        { name: "david", yPos: 125 },
+        { name: "david", yPos: 75 },
+        { name: "wait", time: 1 },
+        { name: "david", yPos: 150 },
+        { name: "david", yPos: 275 },
+        { name: "wait", time: 10 },
+        { name: "joseph", yPos: 10 },
+        { name: "joseph", yPos: 40 },
+        { name: "wait", time: 1 },
+        { name: "joseph", yPos: 90 },
+        { name: "joseph", yPos: 280 },
+        { name: "wait", time: 10 },
+        { name: "david", yPos: 60 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 90 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 60 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 90 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 60 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 90 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 60 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 90 },
+        { name: "joseph", yPos: 60 },
+        { name: "wait", time: 1 },
+        { name: "joseph", yPos: 90 },
+        { name: "joseph", yPos: 120 },
+    ], 4) // Spawns are capped at 4 at a time
+
+
+
+
+    const moveStart = onUpdate(async () => {
+        if (!get("enemy").length) {
+            moveStart.cancel()
+            player = get("player")[0]
+            if (player.worldPos().x > width() / 2) {
+                distanceMoved = player.worldPos().x - width() / 2
+                tween(
+                    player.worldPos(),
+                    vec2(width() / 2, player.worldPos().y),
+                    0.2,
+                    (pos) => player.pos = pos,
+                    easings.linear
+                )
+                tween(
+                    bg2.worldPos(),
+                    vec2(bg2.worldPos().x - distanceMoved - 10, bg2.worldPos().y),
+                    0.2,
+                    (pos) => bg2.pos = pos,
+                    easings.linear
+                )
+                tween(
+                    bg1.worldPos(),
+                    vec2(bg1.worldPos().x - distanceMoved, bg1.worldPos().y),
+                    0.2,
+                    (pos) => bg1.pos = pos,
+                    easings.linear
+                )
+            }
+        }
+    })
+    let bgCancel = false
+    bgMoving = false
+    let goSignCooldown = false
+    const goSignUpdater = onUpdate(async () => {
+        if (!get("enemy").length) {
+            if (!bgMoving && !bgCancel) bgMoving = true // Start background movement
+        }
+        if (!get("enemy").length) {
+            if (bgMoving === true) {
+                if (goSignCooldown === false) {
+                    const goSign = add([
+                        sprite("goSign"),
+                        pos(1650, 400),
+                        scale(10),
+                        fixed(),
+                        z(2),
+                        ("ui"),
+                    ])
+                    play("beep")
+                    goSignCooldown = true
+                    await wait(0.35)
+
+                    goSign.destroy()
+                    await wait(0.35)
+                    goSignCooldown = false
+                }
+            }
+        }
+    })
+
+    const backgroundMovement1 = onUpdate(async () => {
+        player = get("player")[0]
+        if (isKeyDown("right") && player.worldPos().x >= (width() / 2) && bg2.worldPos().x > 10 && bgMoving === true) {
+            bg1.move(-350, 0)
+            bg2.move(-350, 0)
+        }
+        else if (bg2.worldPos().x <= 10) {
+            bgCancel = false
+            bgMoving = false
+            goSignUpdater.cancel()
+            try {
+                goSign.destroy()
+            }
+            catch { }
+            backgroundMovement1.cancel()
+            await spawnWave([
+                { name: "wait", time: 1 },
+                { name: "andrew", yPos: 50 },
+                { name: "gary", yPos: 150 },
+                { name: "gary", yPos: 200 },
+                { name: "wait", time: 5 },
+                { name: "david", yPos: 25 },
+                { name: "gary", yPos: 90 },
+                { name: "david", yPos: 125 },
+                { name: "wait", time: 5 },
+                { name: "david", yPos: 25 },
+                { name: "gary", yPos: 90 },
+                { name: "david", yPos: 125 },
+                { name: "wait", time: 5 },
+            ], 4)
+
+            const roundEnd = onUpdate(async () => {
+                if (!get("enemy").length) {
+                    roundEnd.cancel()
+                    await toggleDarkOverlay(false, true)
+                    await wait(1)
+                    go("stage_four_elevator", playerTag)
+                }
+            })
+        }
+    })
+
+
+
+
+
+
+})
+
+scene("stage_four_elevator", async (playerTag) => {
+    currentRound = 4.5
+    await levelInit(playerTag, "Stage Four Elevator", "stage_four_elevator", ["stage_four_bg"])
+    toggleDarkOverlay(false, true)
 
 
     const weightSign = add([
@@ -3397,6 +3782,7 @@ scene("stage_five_a", async (playerTag) => {
 
 scene("stage_five_b", async (playerTag) => {
     currentRound = 6
+
     await levelInit(playerTag, "Stage Five", "stage_five_b", ["stage_five_b_bg"])
 
 
@@ -3464,9 +3850,13 @@ scene("stage_five_b", async (playerTag) => {
 scene("boss_rush", async (playerTag) => {
 
     stage_background = "stage_five_a_bg"
+    difficultyMultiplier = ((currentRound + (4 + difficulty * 2)) / 10)
 
     await levelInit(playerTag, `Boss-Rush: ${difficultyNames[difficulty]}`, "None", [stage_background])
     await spawnWave([
+        { name: "fadeout" },
+        { name: "wait", time: 1 },
+        { name: "ladro", yPos: 90 },
         { name: "fadeout" },
         { name: "wait", time: 1 },
         { name: "grigory", yPos: 90 },
@@ -3476,6 +3866,7 @@ scene("boss_rush", async (playerTag) => {
         { name: "fadeout" },
         { name: "wait", time: 1 },
         { name: "venus", yPos: 90 },
+        { name: "fadeout" },
         { name: "wait", time: 1 },
         { name: "fightyMan", yPos: 90 },
     ], 1); // Spawns are capped at 1 at a time
@@ -4060,7 +4451,6 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
         difficulty++;
         difficultyText.text = difficultyNames[difficulty];
     })
-
 })
 
 // scene("logout", async () => {
