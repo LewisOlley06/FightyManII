@@ -6,17 +6,19 @@ kaboom({ // Initiates kaboom instance
     virtualControls: false,
     crisp: true, // Disables anti-aliasing and sharpens the game instead
     stretch: true, // Stretches the game to fit the screen
-    debug: false // Disables debug mode (Kaboom.js by default allows the player to hit function keys to show game information)
+    debug: true // Disables debug mode (Kaboom.js by default allows the player to hit function keys to show game information)
 })
 
 loadFont("arcade", "/fonts/arcade.ttf") // Loads the font used throughout the game
 //loading sounds
 loadSound("game_over", "/sounds/game_over.mp3")
 loadSound("axe", "/sounds/FX/axe.wav")
+loadSound("lightning", "/sounds/FX/lightning.mp3")
 loadSound("menu_theme", "/sounds/menu.mp3")
 loadSound("bad_ending", "/sounds/BadEnding.mp3")
-loadSound("good_ending", "/sounds/good_ending.mp3")
+loadSound("good_ending", "/sounds/credits.mp3")
 loadSound("wheels", "/sounds/FX/car.wav")
+loadSound("arcade", "/sounds/arcade.wav")
 loadSound("reload", "/sounds/FX/reload.wav")
 loadSound("fireShort", "/sounds/FX/fireShort.wav")
 loadSound("fireLong", "/sounds/FX/fireLong.wav")
@@ -36,11 +38,12 @@ loadSound("stage_five_a", "/sounds/Stage5a.mp3")
 loadSound("stage_five_b", "/sounds/Stage5b.mp3")
 loadSound("stage_six", "/sounds/Stage6.mp3")
 loadSound("Boss_Final", "/sounds/Boss_Final.mp3")
+loadSound("Boss_Final_Theme", "/sounds/Boss_Final_Theme.mp3")
 loadSound("FinalBossIntro", "/sounds/FinalBossIntro.mp3")
 loadSound("FinalBossLoop1", "/sounds/FinalBossLoop1.mp3")
 loadSound("FinalBossLoop2", "/sounds/FinalBossLoop2.mp3")
 loadSound("leaderboard", "/sounds/leaderboard.mp3")
-loadSound("button", "/sounds/button.mp3")
+loadSound("button", "/sounds/FX/button.mp3")
 loadSound("level_complete", "/sounds/level_complete.mp3")
 loadSound("bad", "/sounds/FX/declined.mp3")
 loadSound("enemyPunch1", "/sounds/FX/light_punch1.wav")
@@ -48,7 +51,7 @@ loadSound("enemyPunch2", "/sounds/FX/light_punch2.wav")
 loadSound("enemyPunch3", "/sounds/FX/enemy_heavy_punch.wav")
 loadSound("enemyDeath1", "/sounds/FX/death1.wav")
 loadSound("enemyDeath2", "/sounds/FX/death2.wav")
-loadSound("beep", "/sounds/beep.mp3")
+loadSound("beep", "/sounds/FX/beep.mp3")
 loadSound("character_select", "/sounds/character_select.mp3")
 
 
@@ -72,6 +75,7 @@ loadSprite("hodsonIcon", "/sprites/ui/hodson.png")
 loadSprite("grigoryIcon", "/sprites/ui/grigory.png")
 loadSprite("venusIcon", "/sprites/ui/venus.png")
 loadSprite("ladroIcon", "/sprites/ui/ladro.png")
+loadSprite("djinnIcon", "/sprites/ui/djinn.png")
 loadSprite("stage_select", "/sprites/backgrounds/Stage Select.png")
 loadSprite("chevron", "/sprites/ui/chevron.png")
 loadSprite("healthbar", "/sprites/ui/healthbar.png")
@@ -87,7 +91,8 @@ loadSprite("stage_four_2", "/sprites/backgrounds/Stage4-2.png")
 loadSprite("stage_four_bg2", "/sprites/backgrounds/Stage4BG.png")
 loadSprite("stage_four_bg", "/sprites/backgrounds/Stage4FG.png")
 loadSprite("stage_four_side", "/sprites/backgrounds/Stage4Side.png")
-
+loadSprite("arcade", "/sprites/backgrounds/arcade.png")
+loadSprite("deliveryManBackground", "/sprites/backgrounds/deliveryMan.png")
 loadSprite("stage_five_a_bg", "/sprites/backgrounds/Stage5a.png")
 loadSprite("stage_five_b_bg", "/sprites/backgrounds/Stage5b.png")
 
@@ -152,6 +157,19 @@ loadSpriteAtlas("/sprites/enemies/ladro.png", {
         anims: {
             'idle': { from: 0, to: 1, loop: true, speed: 8 },
             'downed': { from: 2, to: 2, loop: false },
+        }
+    }
+})
+loadSpriteAtlas("/sprites/ui/deliveryMan.png", {
+    'deliveryMan': {
+        x: 0,
+        y: 0,
+        width: 39,
+        height: 13,
+        sliceX: 3,
+        anims: {
+            'idle': { from: 0, to: 0, loop: true, speed: 8 },
+            'walking': { from: 1, to: 2, loop: true, speed: 4 },
         }
     }
 })
@@ -306,6 +324,61 @@ loadSpriteAtlas("/sprites/enemies/Spicy Man.png", {
     }
 })
 
+loadSpriteAtlas("/sprites/enemies/Djinn.png", {
+    'djinn': {
+        x: 0,
+        y: 0,
+        width: 480,
+        height: 32,
+        sliceX: 15,
+        anims: {
+            'idle': { from: 5, to: 5, loop: true, speed: 0.5 },
+            'lightning': { from: 6, to: 8, loop: true, speed: 6 },
+            'chaosBall': { from: 0, to: 4, loop: true, speed: 2 },
+            'tpStart': { from: 9, to: 14, loop: false, speed: 8 },
+            'tpEnd': { from: 14, to: 9, loop: false, speed: 8 },
+            'superPunch': { from: 0, to: 0, loop: false, speed: 5 }
+        }
+    }
+})
+loadSpriteAtlas("/sprites/enemies/chaosBall.png", {
+    'chaosBall': {
+        x: 0,
+        y: 0,
+        width: 24,
+        height: 8,
+        sliceX: 3,
+        anims: {
+            'idle': { from: 0, to: 2, loop: true, speed: 5 },
+        }
+    }
+})
+loadSpriteAtlas("/sprites/enemies/lightning.png", {
+    'lightning': {
+        x: 0,
+        y: 0,
+        width: 48,
+        height: 96,
+        sliceX: 3,
+        anims: {
+            'idle': { from: 0, to: 2, loop: true, speed: 16 },
+        }
+    }
+})
+loadSpriteAtlas("/sprites/enemies/djinndicator.png", {
+    'djinndicator': {
+        x: 0,
+        y: 0,
+        width: 128,
+        height: 16,
+        sliceX: 8,
+        anims: {
+            'charge': { from: 0, to: 5, loop: true, speed: 5 },
+            'idle': { from: 6, to: 7, loop: true, speed: 16 },
+        }
+    }
+})
+
 
 
 let darkOverlay = null // Stores the dark overlay in memory
@@ -432,13 +505,15 @@ let playerControlEvents = {
     keyUp: [], // Stores the keyUp events for the player
 }
 
+let game_over = false
 let stageFourBackgroundEntity = null // Stores the object of the moving background in Stage 4
 let bgMoving = false // Stores the boolean value of whether the background is moving in Stage 2
 let difficultyMultiplier = 0.9 // Stores the value of the enemy difficulty multiplier
-
+let arcadeAccess = true
 let selectedCharacter = null // Stores the value of the selected character, used for round starts
 let fightyManAttack = 2 // Stores the default value of the Final Boss' first attack
-let hodsonAttack = 1 // Stores the default value of the Final Boss' first attack
+let djinnAttack = 1
+let hodsonAttack = 1
 let playerControlEnabled = false // Stores whether or not the player controls are enabled
 let deathCount = 0
 let sessionScore = 0
@@ -465,7 +540,6 @@ class Healthbar {
         this.healthbar = null;
         this.healthbarOutline = null;
         this.health = this.maxHealth;
-        if (this.flip && currentRound === 6) return
         // Draw the healthbar outline
         this.healthbarOutline = add([
             sprite("healthbar"),
@@ -666,11 +740,26 @@ async function getLeaderboard(difficultyIndex) {
     return (leaderboard)
 }
 
+async function lightningAttack(location) {
+    lightning = spawnProjectile({
+        spriteName: "lightning",
+        scaleAmount: 11,
+        hitboxScale: 0,
+        health: 999,
+        attributes: {
+            strength: 0,
+            attackType: "fireball",
+        }
+    }, vec2(location.x, location.y - 2000), "down", 0.5, false, true, false, location, true)
+
+
+}
+
 async function enableEnemyAI() {
     enemyAIBasic = onUpdate(() => {
         // Gets all entities with the "enemy" tag
         let enemies = get("enemy");
-        let bosses = ["ladro", "grigory", "fightyMan", "venus", "hodson"]
+        let bosses = ["ladro", "grigory", "fightyMan", "venus", "hodson", "djinn"]
         enemies.forEach(async enemy => {
             if (enemy.dead) return // Stops the function if the enemy is dead
             // Get the player's position
@@ -689,6 +778,12 @@ async function enableEnemyAI() {
             if (enemyPos.y >= playerPos.y) verticalDirection = "up"; // Checks whether the entity is to the upper of the player
             if (horizontalDirection === "left" && (enemy.attackType !== "venus")) enemy.flipX = (enemy.attackType === "ladro") ? true : false
             if (horizontalDirection === "right" && (enemy.attackType !== "venus")) enemy.flipX = (enemy.attackType === "ladro") ? false : true
+
+            enemy.onUpdate(() => {
+                const y = enemy.pos.y
+                enemy.z = (y - 460) / 10
+            })
+
 
 
             const distance = Math.sqrt(Math.pow(enemyPos.x - playerPos.x, 2) + Math.pow(enemyPos.y - playerPos.y, 2)) // Calculates the distance between the player and the enemy
@@ -734,6 +829,195 @@ async function enableEnemyAI() {
                 if (enemy.curAnim() == "walking") return
                 enemy.play("walking")
             }
+
+
+            if (enemy.attackType === "djinn") { //If the enemy is the final boss, initiate Final Boss AI.
+                let maxHealth = enemy.healthbar.maxHealth
+                healthDifficultyMultiplier = 1 + (enemy.healthbar.maxHealth - enemy.hp()) / enemy.healthbar.maxHealth;
+                if (enemy.attackCooldown === true) return
+                if (enemy.dead) return
+                enemy.collisionIgnore.push("enemy")
+
+
+                if (djinnAttack === 1) { // Initiates the random float movement
+                    djinnAttack = 2
+                    // enemy.attackCooldown = true
+                    // if (enemy.curAnim() !== "idle") enemy.play("idle")
+                    // await tween(
+                    //     enemy.worldPos(),
+                    //     vec2(getRandomNumber(200, 1800), getRandomNumber(500, 800)),
+                    //     2 / difficultyMultiplier / healthDifficultyMultiplier,
+                    //     (pos) => enemy.pos = pos,
+                    //     easings.linear
+                    // )
+
+                    // enemy.play("idle")
+                    // await wait(0.3 / difficultyMultiplier / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
+                    // djinnAttack = getRandomNumber(1, 5)
+                    // enemy.attackCooldown = false
+                }
+
+                if (djinnAttack === 2) { // Initiates the teleport
+
+                    enemy.attackCooldown = true
+                    enemy.play("tpStart")
+                    await tween(
+                        enemy.worldPos(),
+                        vec2(getRandomNumber(200, 1800), getRandomNumber(500, 800)),
+                        0.3 / difficultyMultiplier / healthDifficultyMultiplier,
+                        (pos) => enemy.pos = pos,
+                        easings.linear
+                    )
+                    await enemy.play("tpEnd")
+                    await wait(0.7)
+                    enemy.play("idle")
+                    await wait(1 / difficultyMultiplier / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
+                    djinnAttack = getRandomNumber(1, 5)
+                    enemy.attackCooldown = false
+                }
+                if (djinnAttack === 3) { // Initiates the chaos balls attack
+                    enemy.attackCooldown = true
+                    await wait(0.5 / difficultyMultiplier / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
+
+                    const playerPos = player.worldPos() // Gets the player's position
+                    const enemyPos = enemy.worldPos() // Gets the enemy's position
+
+                    let horizontalDirection = null // Stores the horizontal direction of the enemy
+                    if (enemyPos.x < playerPos.x) horizontalDirection = "left"; // Checks whether the entity is to the left of the player
+                    if (enemyPos.x >= playerPos.x) horizontalDirection = "right"; // Checks whether the entity is to the right of the player
+                    if (enemyPos.y < playerPos.y) verticalDirection = "down"; // Checks whether the entity is to the lower of the player
+                    if (enemyPos.y >= playerPos.y) verticalDirection = "up"; // Checks whether the entity is to the upper of the player
+
+                    if (horizontalDirection === "left") {
+                        enemy.flipX = false
+                        fireballDown = "southEast"
+                    }
+                    if (horizontalDirection === "right") {
+                        enemy.flipX = true
+                        fireballDown = "southWest"
+                    }
+                    enemy.play("chaosBall")
+
+                    play("fireShort")
+                    spawnProjectile({
+                        spriteName: "chaosBall",
+                        scaleAmount: 5,
+                        hitboxScale: 0.5,
+                        health: 999,
+                        attributes: {
+                            strength: 5 * healthDifficultyMultiplier,
+                            attackType: "fireball",
+                        }
+                    }, enemyPos, horizontalDirection, 1, false, true)
+                    await wait(0.5)
+                    play("fireShort")
+                    spawnProjectile({
+                        spriteName: "chaosBall",
+                        scaleAmount: 5,
+                        hitboxScale: 0.5,
+                        health: 999,
+                        attributes: {
+                            strength: 5 * healthDifficultyMultiplier,
+                            attackType: "fireball",
+                        }
+                    }, enemyPos, fireballDown, 1, false, true)
+                    await wait(0.5)
+                    play("fireShort")
+                    spawnProjectile({
+                        spriteName: "chaosBall",
+                        scaleAmount: 5,
+                        hitboxScale: 0.5,
+                        health: 999,
+                        attributes: {
+                            strength: 5 * healthDifficultyMultiplier,
+                            attackType: "fireball",
+                        }
+                    }, enemyPos, "down", 1, false, true)
+                    await wait(0.5)
+                    play("fireShort")
+                    spawnProjectile({
+                        spriteName: "chaosBall",
+                        scaleAmount: 5,
+                        hitboxScale: 0.5,
+                        health: 999,
+                        attributes: {
+                            strength: 5 * healthDifficultyMultiplier,
+                            attackType: "fireball",
+                        }
+                    }, enemyPos, fireballDown, 1, false, true)
+                    await wait(0.5)
+                    play("fireShort")
+                    spawnProjectile({
+                        spriteName: "chaosBall",
+                        scaleAmount: 5,
+                        hitboxScale: 0.5,
+                        health: 999,
+                        attributes: {
+                            strength: 5 * healthDifficultyMultiplier,
+                            attackType: "fireball",
+                        }
+                    }, enemyPos, horizontalDirection, 1, false, true)
+                    await wait(0.5)
+                    const distance = Math.sqrt(Math.pow(enemyPos.x - playerPos.x, 2) + Math.pow(enemyPos.y - playerPos.y, 2)) // Calculates the distance between the player and the enemy
+                    djinnAttack = 2
+
+                    enemy.attackCooldown = false
+                }
+                if (djinnAttack === 4) { // Initiates the lightning
+                    enemy.attackCooldown = true
+                    if (enemy.curAnim() !== "lightning") enemy.play("lightning")
+                    attackLocations = [vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)), vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)), vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800))]
+                    if (difficulty >= 3) {
+                        attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
+                        attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
+                        attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
+                        attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
+                    }
+                    if (difficulty >= 4) {
+                        attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
+                        attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
+                        attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
+                        attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
+                    }
+                    for (const location of attackLocations) {
+                        spawnProjectile({
+                            spriteName: "djinndicator",
+                            scaleAmount: 10,
+                            hitboxScale: 0,
+                            health: 999,
+                            attributes: {
+                                strength: 0,
+                                attackType: "none",
+                            }
+                        }, location, "djinndicator", 0, false);
+                    }
+
+                    await wait(1)
+                    for (let i = 0; i < 10; i++) {
+                        play("beep");
+                        await wait(0.1);
+                    }
+
+                    const attackPromises = attackLocations.map(location =>
+                        performAttack(enemy, "damageBox", 50, location, 0.5)
+                    );
+
+                    play("lightning")
+
+                    await Promise.all(attackPromises);
+                    enemy.play("idle")
+                    djinnAttack = getRandomNumber(1, 5)
+                    enemy.attackCooldown = false
+                }
+                if (djinnAttack === 5) {
+                    djinnAttack = getRandomNumber(1, 3)
+                } // Initiates the chaos balls attack
+            }
+
+
+
+
+
 
 
             if (enemy.attackType === "fightyMan") { //If the enemy is the final boss, initiate Final Boss AI.
@@ -810,7 +1094,7 @@ async function enableEnemyAI() {
                             strength: 5 * healthDifficultyMultiplier,
                             attackType: "fireball",
                         }
-                    }, enemyPos, horizontalDirection, 1, false, true)
+                    }, enemyPos, horizontalDirection, 3, false, true)
                     await wait(0.1)
                     spawnProjectile({
                         spriteName: "fireProj",
@@ -821,7 +1105,7 @@ async function enableEnemyAI() {
                             strength: 5 * healthDifficultyMultiplier,
                             attackType: "fireball",
                         }
-                    }, enemyPos, fireballDown, 1, false, true)
+                    }, enemyPos, fireballDown, 3, false, true)
                     await wait(0.1)
                     spawnProjectile({
                         spriteName: "fireProj",
@@ -832,7 +1116,7 @@ async function enableEnemyAI() {
                             strength: 5 * healthDifficultyMultiplier,
                             attackType: "fireball",
                         }
-                    }, enemyPos, "down", 1, false, true)
+                    }, enemyPos, "down", 3, false, true)
                     await wait(0.1)
                     spawnProjectile({
                         spriteName: "fireProj",
@@ -843,7 +1127,7 @@ async function enableEnemyAI() {
                             strength: 5 * healthDifficultyMultiplier,
                             attackType: "fireball",
                         }
-                    }, enemyPos, fireballDown, 1, false, true)
+                    }, enemyPos, fireballDown, 3, false, true)
                     await wait(0.1)
                     spawnProjectile({
                         spriteName: "fireProj",
@@ -854,7 +1138,7 @@ async function enableEnemyAI() {
                             strength: 5 * healthDifficultyMultiplier,
                             attackType: "fireball",
                         }
-                    }, enemyPos, horizontalDirection, 1, false, true)
+                    }, enemyPos, horizontalDirection, 3, false, true)
 
                     const distance = Math.sqrt(Math.pow(enemyPos.x - playerPos.x, 2) + Math.pow(enemyPos.y - playerPos.y, 2)) // Calculates the distance between the player and the enemy
 
@@ -947,7 +1231,9 @@ async function enableEnemyAI() {
                                 strength: 5 * healthDifficultyMultiplier,
                                 attackType: "firebar",
                             }
-                        }, enemyPos, "left", 10, false, true)
+                        }, vec2(2000, getRandomNumber(500, 900)), "right", 10, false, true)
+                        await wait(0.8)
+                        play("fireLong")
                         spawnProjectile({
                             spriteName: "firebar",
                             scaleAmount: 5,
@@ -957,18 +1243,9 @@ async function enableEnemyAI() {
                                 strength: 5 * healthDifficultyMultiplier,
                                 attackType: "firebar",
                             }
-                        }, vec2(enemy.worldPos().x - 300, enemy.worldPos().y + 200), "left", 5, false, true)
-                        spawnProjectile({
-                            spriteName: "firebar",
-                            scaleAmount: 5,
-                            hitboxScale: 0.5,
-                            health: 999,
-                            attributes: {
-                                strength: 5 * healthDifficultyMultiplier,
-                                attackType: "firebar",
-                            }
-                        }, vec2(enemy.worldPos().x, enemy.worldPos().y + 400), "left", 10, false, true)
+                        }, vec2(2000, getRandomNumber(500, 900)), "right", 10, false, true)
                     }
+
                     else {
                         play("fireLong")
                         spawnProjectile({
@@ -980,7 +1257,9 @@ async function enableEnemyAI() {
                                 strength: 5 * healthDifficultyMultiplier,
                                 attackType: "firebar",
                             }
-                        }, enemyPos, "right", 10, false, true)
+                        }, vec2(-100, getRandomNumber(500, 900)), "left", 10, false, true)
+                        await wait(0.8)
+                        play("fireLong")
                         spawnProjectile({
                             spriteName: "firebar",
                             scaleAmount: 5,
@@ -990,17 +1269,7 @@ async function enableEnemyAI() {
                                 strength: 5 * healthDifficultyMultiplier,
                                 attackType: "firebar",
                             }
-                        }, vec2(enemy.worldPos().x + 300, enemy.worldPos().y + 200), "right", 5, false, true)
-                        spawnProjectile({
-                            spriteName: "firebar",
-                            scaleAmount: 5,
-                            hitboxScale: 0.5,
-                            health: 999,
-                            attributes: {
-                                strength: 5 * healthDifficultyMultiplier,
-                                attackType: "firebar",
-                            }
-                        }, vec2(enemy.worldPos().x, enemy.worldPos().y + 400), "right", 10, false, true)
+                        }, vec2(-100, getRandomNumber(500, 900)), "left", 10, false, true)
                     }
                     enemy.attackCooldown = false
                     if (getRandomNumber(1, 4) !== 4) fightyManAttack = getRandomNumber(3, 5)
@@ -1671,9 +1940,9 @@ async function enableEnemyAI() {
 
 
         })
-    }
-    )
+    })
 }
+
 
 
 
@@ -1735,9 +2004,13 @@ async function checkFightyManHP() {
 
 
 async function gameOver(gameMode) {
+    game_over = true
     stopMusic(currentSong)
     currentSong = play("game_over", { loop: false, volume: 0.5 }) // Stops the music, plays the game over jingle
-
+    if (currentRound === 2) {
+        clearInterval(oldManSpawn)
+        funRoom.cancel()
+    }
     await toggleDarkOverlay(false)
     await Promise.all([ // Wait for both texts to finish animating
         // Splits the intro text into two lines
@@ -1797,10 +2070,11 @@ function getRandomNumber(min, max) { // Helper function to get a random number
 }
 
 // Function to stop an audio instance immediately
-function stopMusic(audioContext) {
+async function stopMusic(audioContext) {
     audioContext.loop = false // Disables looping if it is enabled
     const duration = audioContext.duration() // Gets the duration of the audio
-    audioContext.seek(duration) // Seeks to the end of the audio
+    audioContext.volume = 0
+    await audioContext.seek(duration) // Seeks to the end of the audio
 }
 
 async function toggleDarkOverlay(isRoundOne = false, blackout = false) {
@@ -1888,7 +2162,7 @@ async function roundText(titleText, yPos, initialPos, isRoundOne = false, durati
 }
 
 // Helper function to make managing buttons easier
-function addButton(txt, btn_opt, position, callback) {
+function addButton(txt, btn_opt, position, callback, opc = 1) {
     // Creates the button box
     const btn = add([
         rect(btn_opt.x, btn_opt.y, { radius: 8 }),
@@ -1897,6 +2171,7 @@ function addButton(txt, btn_opt, position, callback) {
         scale(1),
         anchor("center"),
         outline(4, rgb(255, 255, 255)),
+        opacity(opc),
         "ui_button",
     ])
 
@@ -1905,6 +2180,7 @@ function addButton(txt, btn_opt, position, callback) {
         text(txt, { align: "center", size: btn_opt.txtsize || 22.5 }),
         anchor("center"),
         color(255, 255, 255),
+        opacity(opc),
     ])
 
     btn.use(color(0, 0, 0)) // Sets the button colour to white
@@ -1963,7 +2239,7 @@ async function destroyHitbox(hitbox) {
     destroy(hitbox)
 } // DONE
 
-async function performAttack(entity, attackName) {
+async function performAttack(entity, attackName, damageBoxDamage = null, damageBoxLocation = null, damageBoxTime = null) {
     let attackHitbox = null // Stores the hitbox of the attack
     if (attackName === "jab") {
         if (entity.curAnim() === attackName) return // Stops the jab animation from playing twice
@@ -1981,6 +2257,25 @@ async function performAttack(entity, attackName) {
             destroyHitbox(attackHitbox)
         })
     }
+
+
+    if (attackName === "damageBox") {
+        await wait(damageBoxTime, () => {
+            attackHitbox = add([
+                rect(150, 40),
+                pos(damageBoxLocation),
+                area({ collisionIgnore: ["enemy", "boss"] }), // Stops the player hurting themselves
+                anchor("center"),
+                opacity(0),
+                "atkHitbox"
+            ])
+            destroyHitbox(attackHitbox)
+        })
+    }
+
+
+
+
     if (attackName === "cross") {
         if (entity.attackType === "fightyMan") {
             if (entity.curAnim() === "flarePunch") return
@@ -2066,6 +2361,12 @@ async function performAttack(entity, attackName) {
                 character.hurt(22 * entity.strength * (1 - character.defense)) // Hurts the character by 12 health
                 if (character.healthbar) character.healthbar.hurt(22 * entity.strength * (1 - character.defense)) // Update the healthbar visual, -12 health
             }
+            if (attackName === "damageBox") {
+                if (character.dead) continue;
+                play(`punch${getRandomNumber(3, 4)}`) // Plays a random punch sound effect
+                character.hurt(damageBoxDamage * (1 - character.defense)) // Hurts the character by 12 health
+                if (character.healthbar) character.healthbar.hurt(22 * entity.strength * (1 - character.defense)) // Update the healthbar visual, -12 health
+            }
             await checkDeath(character, attackHitbox)
             destroyAll("atkHitbox") // Destroys all instances of the attack hitbox
         }
@@ -2093,10 +2394,11 @@ async function checkDeath(character, attackHitbox) {
         character.collisionIgnore.push("enemy") // Stops the enemy from colliding with the enemy
         // Remove the hitbox after the animation is done
         if (character.dead) return;
-        bosses = ["venus", "fightyMan", "hodson", "ladro", "grigory"]
+        bosses = ["venus", "fightyMan", "hodson", "ladro", "grigory", "djinn"]
         if (!bosses.includes(character.attackType)) { character.play("downed") }
         if (character.attackType === "fightyMan") character.play("fireShield")
         if (character.attackType === "hodson") character.play("idle")
+        if (character.attackType === "djinn") character.play("tpStart")
         if (character.attackType === "ladro") character.play("downed")
         if (character.attackType === "grigory") character.play("downed")
         tween(
@@ -2135,6 +2437,7 @@ async function checkDeath(character, attackHitbox) {
 
 // Helper function to spawn entities
 function spawnEntity(options, ySpawn) { // Summons an entity at a specific point with a sprite and AI type
+    if (game_over === true) return
     let spawnX = chance(0.5) === true ? 0 : 1920 // Randomly picks a side to spawn the entity on
     let bossesList = ["fightyMan", "venus", "grigory"]
     if (bossesList.indexOf(options.attributes.attackType) !== -1) {
@@ -2174,7 +2477,7 @@ function spawnEntity(options, ySpawn) { // Summons an entity at a specific point
     return entity
 }
 
-async function spawnProjectile(options, spawnPos, direction, velocity, shotgun = false, linear = false, damagesEnemies = false) { // Summons an entity at a specific point with a sprite and AI type
+async function spawnProjectile(options, spawnPos, direction, velocity, shotgun = false, linear = false, damagesEnemies = false, stopPoint = null, lightningType = false) { // Summons an entity at a specific point with a sprite and AI type
     let rotation = 0
     let player = get("player")[0]
     if (direction === "left" && options.attributes.attackType === "firebar") rotation = 90
@@ -2201,7 +2504,10 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             attackType: options.attributes.attackType || "fire"
         }
     ]);
-
+    projectile.onUpdate(() => {
+        const y = projectile.pos.y
+        projectile.z = (y - 460) / 10
+    })
     if (direction === "left" || direction === "southEast" || direction === "northEast") {
         projectile.flipX = false
     }
@@ -2215,6 +2521,8 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
         if (projectile.isColliding(player) && damagesEnemies === false) {
             if (!projectile.hit) { // Check if the hit property is false
                 projectile.hit = true // Set the hit property to true
+                if (lightningType === true) return
+                if (projectile.attackType === "none") return
                 projectileDamage.cancel()
                 if (projectile.attackType !== "firebar") projectile.destroy()
                 player.hurt(5 * projectile.strength)
@@ -2242,7 +2550,7 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
     })
     if (shotgun === true) spread = 0.4
     else spread = 1
-
+    if (lightningType === true) projectile.play("idle")
     if (difficulty > 3) spread = getRandomNumber(5, 100) / 100
     if (direction === "left") {
         await tween(
@@ -2265,7 +2573,7 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
     else if (direction === "down") {
         await tween(
             projectile.pos,
-            vec2(projectile.pos.x, height() + 2500),
+            vec2(projectile.pos.x, stopPoint === null ? height() + 2500 : stopPoint.y - 500),
             1 * velocity,
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
@@ -2274,7 +2582,7 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
     else if (direction === "up") {
         await tween(
             projectile.pos,
-            vec2(projectile.pos.x, -height() - 2500),
+            vec2(projectile.pos.x, stopPoint === null ? -height() - 2500 : stopPoint.y + 500),
             1 * velocity,
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
@@ -2315,6 +2623,22 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
+    }
+    else if (direction === "djinndicator") {
+        await projectile.play("charge")
+        await wait(1)
+        await projectile.play("idle")
+        await wait(1)
+        lightningAttack(projectile.pos)
+        await wait(0.5)
+    }
+    if (lightningType === true) {
+        await wait(1)
+        for (let i = 0; i < (20); i++) {
+            await wait(0.01, () => projectile.opacity -= 0.05);
+
+        }
+
     }
     projectile.destroy()
     projectileDamage.cancel()
@@ -2372,6 +2696,16 @@ function getEnemyAttributes(entityName, currentRound, difficulty) {
             weight: 2,
             strength: 1.7 * difficultyMultiplier,
             attackType: "fightyMan",
+        }
+    } else if (entityName === "djinn") {
+        enemyAttributes = {
+            health: 300 * difficultyMultiplier,
+            healthbar: 300 * difficultyMultiplier,
+            aggression: 60 * difficultyMultiplier,
+            speed: 10 * difficultyMultiplier,
+            weight: 2,
+            strength: 1.5 * difficultyMultiplier,
+            attackType: "djinn",
         }
     } else if (entityName === "ladro") {
         enemyAttributes = {
@@ -2562,6 +2896,26 @@ async function spawnLadro(zSpawn) {
     currentSong = play("Boss", { loop: true }, { volume: globalVolume })
     ladro.play("idle")
 }
+async function spawnDjinn(zSpawn) {
+    let maxHealth = 300 * difficultyMultiplier
+    const djinn = spawnEntity({
+        spriteName: "djinn",
+        scaleAmount: 10,
+        hitboxScale: 0.5,
+        attributes: getEnemyAttributes("djinn", currentRound, difficulty),
+        tag: "enemy",
+        healthbar: new Healthbar({
+            text: "Djinn",
+            icon: "djinnIcon",
+            maxHealth: maxHealth,
+            position: vec2(1300, -100),
+            color: rgb(255, 0, 0),
+            flip: true
+        })
+    }, zSpawn)
+    currentSong = play("Boss", { loop: true }, { volume: globalVolume })
+    djinn.play("idle")
+}
 async function spawnHodson(zSpawn) {
     let maxHealth = 180 * difficultyMultiplier
     const hodson = spawnEntity({
@@ -2619,6 +2973,9 @@ async function spawnWave(enemyQueue, entityCap) {
         } else if (item.name === "ladro") {
             spawnLadro(item.yPos);
             console.log(`Spawned ${item.name} (${enemyQueue.length} left)`)
+        } else if (item.name === "djinn") {
+            spawnDjinn(item.yPos);
+            console.log(`Spawned ${item.name} (${enemyQueue.length} left)`)
         } else if (item.name === "wait") {
             await wait(item.time);
             console.log(`Spawned ${item.name} (${enemyQueue.length} left)`)
@@ -2646,6 +3003,7 @@ async function spawnWave(enemyQueue, entityCap) {
 function registerPlayerControls(player) {
     // Player controls (keyDown events)
     playerControlEvents.keyDown.push(onKeyDown("left", () => {
+        if (currentRound === 2 && (player.worldPos().x < 225) && player.worldPos().y < 468) return
         if (!playerControlEnabled) return // Stops the player from moving if the controls are disabled (e.g. during an attack)
         if ((isKeyDown("left") && isKeyDown("right"))) return player.play("idle") // Stops the player from moving if conflicting keys are pressed
         player.flipX = true // Flips the sprite horizontally
@@ -2657,6 +3015,7 @@ function registerPlayerControls(player) {
     }))
 
     playerControlEvents.keyDown.push(onKeyDown("right", () => {
+        if (currentRound === 2 && (player.worldPos().x > 375) && player.worldPos().y < 468) return
         if (bgMoving === true && player.worldPos().x > width() / 2) {
             if (player.curAnim() == "walking") return // Stops the walking animation from playing twice
             player.play("walking") // Plays the walking animation by default
@@ -2677,7 +3036,7 @@ function registerPlayerControls(player) {
         if (!playerControlEnabled) return // Stops the player from moving if the controls are disabled (e.g. during an attack)
         if ((isKeyDown("up") && isKeyDown("down"))) return player.play("idle") // Stops the player from moving if conflicting keys are pressed
         const yDist = (stageGround.worldPos().y - player.worldPos().y) - 60 // Calculate the distance between the player and the bottom of 2.5d platform
-        if (currentRound !== 4.5 && yDist > 400) return
+        if (currentRound !== 4.5 && yDist > 400 && !(currentRound === 2 && player.worldPos().x > 225 && player.worldPos().x < 375 && arcadeAccess === true)) return
         if (currentRound === 4.5 && yDist > 600) return
         player.move(0, -350 * player.speed)
         if (player.curAnim() == "walking") return // Stops the walking animation from playing twice
@@ -2699,7 +3058,6 @@ function registerPlayerControls(player) {
 
         let direction = null
         if (selectedCharacter === "grigory") {
-            console.log(player.reloaded)
             if (player.reloaded === false) return
             if (player.shotgunCooldown === true) return
             player.shotgunCooldown = true
@@ -2820,6 +3178,7 @@ async function levelInit(playerTag, introText, songName, backgrounds) { // Funct
         currentSong = play(songName, { loop: true, volume: 0.5 })
     }
     let playerHP = 150
+    game_over = false
     if (selectedCharacter === "grigory") healthbarIcon = "grigoryIcon"
     else if (selectedCharacter === "johnny's Twin Brother") {
         playerHP = 75, healthbarIcon = "johnny_hp"
@@ -2853,7 +3212,10 @@ async function levelInit(playerTag, introText, songName, backgrounds) { // Funct
     player.play("idle")
     const isRoundFour = introText.toLowerCase().includes("elevator")
 
-
+    player.onUpdate(() => {
+        const y = player.pos.y
+        player.z = (y - 460) / 10
+    })
 
 
 
@@ -2866,21 +3228,21 @@ async function levelInit(playerTag, introText, songName, backgrounds) { // Funct
             pos(489, 0),
             scale(10.1),
             fixed(),
-            z(-2),
+            z(-107),
         ])
         add([
             sprite("dark"),
             pos(0, 0),
             scale(10),
             fixed(),
-            z(-4)
+            z(-107)
         ])
         stageFourBackgroundEntity = add([
             sprite(backgrounds[0]),
             pos(0, 0),
             scale(10),
             fixed(),
-            z(0)
+            z(-103)
         ])
     }
     else {
@@ -2890,7 +3252,7 @@ async function levelInit(playerTag, introText, songName, backgrounds) { // Funct
                 pos(0, 0),
                 scale(10),
                 fixed(),
-                z(0)
+                z(-102)
             ])
             if (isRoundOne && animBackground === false) {
                 background.play("idle")
@@ -2988,32 +3350,65 @@ scene("stage_one", async (playerTag) => { // Opens up a new scene for level one 
     })
 })
 
-scene("stage_two", async (playerTag) => {
+scene("stage_two", async (playerTag, arcade = true) => {
     const bg1 = add([
         sprite("stage_two_bg"),
         pos(0, 0),
         scale(10),
-        z(-1),
+        z(-12),
         ("bg"),
     ]);
     const bg2 = add([
         sprite("stage_two_bg2"),
         pos(1920, 0),
         scale(10),
-        z(-1),
+        z(-12),
         ("bg")
     ]);
     const bg3 = add([
         sprite("stage_two_bg3"),
         pos(4040, 0),
         scale(10),
-        z(-1),
+        z(-12),
         ("bg")
     ]);
 
     await levelInit(playerTag, "Stage Two", "stage_two", [])
+    player = get("player")[0]
 
 
+    if (arcade === false) {
+        arcadeAccess = false
+    }
+    else {
+        arcadeAccess = true
+    }
+    const funRoom = onUpdate(async () => {
+        if (player.z < -12) {
+            playerControlEvents.keyDown.forEach(keyDownEvent => keyDownEvent.cancel()) // Stops the player from moving
+            playerControlEvents.keyUp.forEach(keyUpEvent => keyUpEvent.cancel()) // Stops the player from moving
+            const interval = 0.1; // time interval between each volume change
+            let vol = 1; // initial volume
+            await funRoom.cancel()
+            toggleDarkOverlay(false, true)
+            for (let i = 0; i < 11; i++) {
+                if (vol > 0) {
+                    vol -= 0.1; // decrease volume by 0.1
+                    volume(vol); // set the new volume
+                    await wait(interval)
+
+                }
+            }
+            volume(0)
+            await wait(1)
+            volume(1)
+            clearInterval(oldManSpawn)
+            funRoom.cancel()
+            go("arcade", playerTag)
+
+
+        }
+    })
 
     currentRound = 2
     oldManSpawn = setInterval(async () => { //old man spawns every 10 seconds (background decoration)
@@ -3088,18 +3483,6 @@ scene("stage_two", async (playerTag) => {
         { name: "joseph", yPos: 90 },
         { name: "joseph", yPos: 120 },
     ], 4) // Spawns are capped at 4 at a time
-
-    await spawnWave([
-        { name: "fadeout" },
-        { name: "wait", time: 2 },
-        { name: "grigory", yPos: 90 },
-        { name: "gary", yPos: 200 },
-        { name: "gary", yPos: 200 },
-        { name: "gary", yPos: 200 },
-        { name: "gary", yPos: 200 },
-        { name: "gary", yPos: 200 },
-    ], 2)
-
 
     const moveStart = onUpdate(async () => {
         if (!get("enemy").length) {
@@ -3220,6 +3603,248 @@ scene("stage_two", async (playerTag) => {
 
 })
 
+scene("arcade", async (playerTag) => {
+    let background1 = add([
+        sprite("deliveryManBackground"),
+        pos(192, 54),
+        scale(8),
+        fixed(),
+        z(-100)
+    ])
+    let background2 = add([
+        sprite("arcade"),
+        pos(192, 54),
+        scale(8),
+        fixed(),
+        z(10)
+    ])
+    add([
+        sprite("dark"),
+        pos(-3000, 0),
+        scale(5),
+        fixed(),
+        z(-7)
+    ])
+    add([
+        sprite("dark"),
+        pos(1500, 0),
+        scale(5),
+        fixed(),
+        z(-7)
+    ])
+    add([
+        sprite("dark"),
+        pos(100, -4400),
+        scale(5),
+        fixed(),
+        z(-7)
+    ])
+    add([
+        sprite("dark"),
+        pos(100, 900),
+        scale(5),
+        fixed(),
+        z(-7)
+    ])
+    stopMusic(currentSong)
+    await wait(1.5)
+
+    oldManSpawn = setInterval(async () => {
+        const oldManDirection = chance(0.5) == 0 ? "left" : "right"
+        lanes = [300, 500, 700]
+        const oldMan = add([
+            sprite("old_man"),  // Renders as a sprite
+            pos((oldManDirection == "right" ? -width() - 100 : width() + 100), lanes[getRandomNumber(0, 2)]),
+            outline(4, rgb(0, 0, 0)),
+            health(30),
+            scale(3),
+            z(-8),
+            "oldManHitbox"
+        ])
+        oldManHitbox = oldMan.add([
+            rect(10, 20),
+            pos(15, 25),
+            area({ collisionIgnore: ["oldManHitbox"] }), // Stops the player hurting themselves
+            anchor("center"),
+            opacity(0),
+            "oldManHitbox"
+        ])
+
+        if (oldManDirection == "left") oldMan.flipX = true
+        let oldManSpeed = getRandomNumber(1, 20)
+        if (oldManSpeed < 5) {
+            play("wheels")
+        }
+        await tween(
+            oldMan.pos,
+            vec2((oldManDirection == "left" ? -width() - 100 : width() + 100), oldMan.pos.y),
+            oldManSpeed,
+            (pos) => oldMan.pos = pos,
+            easings.linear
+        )
+        oldMan.destroy()
+        oldManHitbox.destroy()
+    }, 250)
+
+    currentSong = play("arcade", { loop: true, volume: 0.5 })
+    play("beep")
+    goalText = add([
+        text(`Deliver the pizza!`, { align: "center", size: 22.5 }),
+        color(255, 255, 255),
+        pos(width() / 2, (height() / 2) + 350),
+        anchor("center"),
+        z(4),
+    ])
+    await wait(1.5)
+    const deliveryManPlayer = add([
+        sprite("deliveryMan"),  // Renders as a sprite
+        pos(vec2(600, (height() / 2) + 300)),
+        outline(4, rgb(0, 0, 0)),
+        health(1),
+        scale(8),
+        z(5)
+    ])
+    playerHitbox = deliveryManPlayer.add([
+        rect(2, 2),
+        pos(6.5, 12),
+        area({ collisionIgnore: ["deliveryMan"] }), // Stops the player hurting themselves
+        anchor("center"),
+        opacity(0),
+        "deliveryMan"
+    ])
+
+
+    onCollideUpdate("oldManHitbox", "deliveryMan", () => {
+        hitByMan()
+    });
+    const victoryCheck = onUpdate(async () => {
+
+        if (deliveryManPlayer.worldPos().x > 1100 && deliveryManPlayer.worldPos().y < 210) {
+            victoryCheck.cancel()
+            deliveryManVictory()
+        }
+    })
+
+    async function deliveryManVictory() {
+        await clearInterval(oldManSpawn)
+        await get("oldManHitbox").forEach((obj) => {
+            destroy(obj);
+        })
+        destroy(goalText)
+        deliveryManPlayer.play("idle")
+        playerControlEnabled = false
+        stopMusic(currentSong)
+        await wait(2)
+        failText = add([
+            text(`You delivered the pizza!`, { align: "center", size: 22.5 }),
+            color(255, 255, 255),
+            pos(width() / 2, (height() / 2) + 350),
+            anchor("center"),
+            z(4),
+        ])
+        play("beep")
+        toggleDarkOverlay(false, true)
+        await wait(3)
+        go("stage_three", playerTag)
+    }
+
+    async function hitByMan() {
+        await clearInterval(oldManSpawn)
+        await get("oldManHitbox").forEach((obj) => {
+            destroy(obj);
+        })
+        destroy(goalText)
+        destroy(background1)
+        deliveryManPlayer.play("idle")
+        playerControlEnabled = false
+        stopMusic(currentSong)
+        add([
+            sprite("dark"),
+            pos(0, 0),
+            scale(10),
+            fixed(),
+            z(-100)
+        ])
+        await wait(2)
+        failText = add([
+            text(`You were hit by an old man.`, { align: "center", size: 22.5 }),
+            color(255, 255, 255),
+            pos(width() / 2, (height() / 2) + 350),
+            anchor("center"),
+            z(4),
+        ])
+        play("knocked_down")
+        toggleDarkOverlay(false, true)
+        await wait(3)
+        go("stage_two", playerTag, false)
+    }
+
+    playerControlEvents.keyDown.push(onKeyDown("left", () => {
+        if (!playerControlEnabled) return
+        if ((isKeyDown("left") && isKeyDown("right"))) return
+        if (deliveryManPlayer.worldPos().x < 540) return // Stops player from moving offscreen
+        deliveryManPlayer.move(-150, 0)
+    }))
+    playerControlEvents.keyDown.push(onKeyDown("right", () => {
+        if (!playerControlEnabled) return
+        if ((isKeyDown("left") && isKeyDown("right"))) return
+        if (deliveryManPlayer.worldPos().x > 1270) return // Stops player from moving offscreen
+        deliveryManPlayer.move(150, 0)
+    }))
+    playerControlEvents.keyDown.push(onKeyDown("up", () => {
+        if (!playerControlEnabled) return
+        if ((isKeyDown("up") && isKeyDown("down"))) return
+        if (deliveryManPlayer.worldPos().y < 200) return // Stops player from moving offscreen
+        deliveryManPlayer.move(0, -150)
+    }))
+    playerControlEvents.keyDown.push(onKeyDown("down", () => {
+        if (!playerControlEnabled) return
+        if ((isKeyDown("up") && isKeyDown("down"))) return
+        if (deliveryManPlayer.worldPos().y > 780) return // Stops player from moving offscreen
+        deliveryManPlayer.move(0, 150)
+    }))
+
+    deliveryManPlayer.play("walking")
+})
+
+
+
+
+
+scene("deliveryManFail", async (playerTag) => {
+    currentRound = 6
+    let background1 = add([
+        sprite("dark"),
+        pos(0, 0),
+        scale(10),
+        fixed(),
+        z(0)
+    ])
+    await wait(1.5)
+    play("beep")
+    failText = add([
+        text(`You were hit by an old man.`, { align: "center", size: 22.5 }),
+        color(255, 255, 255),
+        pos(width() / 2, (height() / 2) + 205),
+        anchor("center"),
+        z(4)
+    ])
+    await wait(1.5)
+    let opacity = 1; // Initial opacity
+    let decreasePerSecond = 0.5; // The amount to decrease the opacity by per second
+
+    failText.onUpdate(() => {
+        opacity -= decreasePerSecond * dt(); // Decrease the opacity
+        if (opacity < 0) opacity = 0; // Ensure opacity doesn't go below 0
+        failText.color.a = opacity; // Apply the new opacity
+    });
+    await wait(3)
+    await levelComplete()
+    go("stage_two", playerTag)
+
+
+
+})
 
 
 scene("stage_three", async (playerTag) => {
@@ -3295,6 +3920,8 @@ scene("stage_three", async (playerTag) => {
         }
     })
 })
+
+
 
 scene("stage_four", async (playerTag) => {
     const bg1 = add([
@@ -3492,7 +4119,7 @@ scene("stage_four_elevator", async (playerTag) => {
         pos(1200, 80),
         scale(5),
         fixed(),
-        z(2),
+        z(-101),
         ("ui"),
     ])
     play("elevator_start")
@@ -3506,7 +4133,7 @@ scene("stage_four_elevator", async (playerTag) => {
         sprite("stage_four_bg2"),
         pos(489, 0),
         scale(10.5),
-        z(-1),
+        z(-104),
         { speed: 100 },
     ]);
 
@@ -3514,7 +4141,7 @@ scene("stage_four_elevator", async (playerTag) => {
         sprite("stage_four_bg2"),
         pos(489, -height()),
         scale(10.5),
-        z(-1),
+        z(-104),
         { speed: 100 },
     ]);
 
@@ -3537,7 +4164,7 @@ scene("stage_four_elevator", async (playerTag) => {
         sprite("stage_four_side"),
         pos(-20, 0),
         scale(10),
-        z(0),
+        z(-102),
         { speed: 200 },
     ]);
 
@@ -3545,7 +4172,7 @@ scene("stage_four_elevator", async (playerTag) => {
         sprite("stage_four_side"),
         pos(-20, -height()),
         scale(10),
-        z(0),
+        z(-102),
         { speed: 200 },
     ]);
 
@@ -3569,7 +4196,7 @@ scene("stage_four_elevator", async (playerTag) => {
         sprite("stage_four_side"),
         pos(1420, 0),
         scale(10),
-        z(0),
+        z(-102),
         { speed: 200 },
     ]);
 
@@ -3577,7 +4204,7 @@ scene("stage_four_elevator", async (playerTag) => {
         sprite("stage_four_side"),
         pos(1420, -height()),
         scale(10),
-        z(0),
+        z(-102),
         { speed: 200 },
     ]);
     side3.flipX = true
@@ -3600,11 +4227,19 @@ scene("stage_four_elevator", async (playerTag) => {
 
 
     weightSign.onUpdate(async () => {
-        if (get("enemy").length < 6) {
-            weightSign.play(String(get("enemy").length + 1))
+        enemies = get("enemy")
+        let enemyCount = 0;
+
+        for (let i = 0; i < enemies.length; i++) {
+            if (!enemies[i].dead) {
+                enemyCount++;
+            }
+        }
+        if (enemyCount < 6) {
+            weightSign.play(String(enemyCount + 1))
         }
         else {
-            if (currentRound === 4) {
+            if (currentRound === 4.5) {
                 weightSign.play("6")
                 playerControlEvents.keyDown.forEach(keyDownEvent => keyDownEvent.cancel()) // Stops the player from moving
                 playerControlEvents.keyUp.forEach(keyUpEvent => keyUpEvent.cancel()) // Stops the player from moving
@@ -3613,7 +4248,7 @@ scene("stage_four_elevator", async (playerTag) => {
                 fallingEntities = get("enemy")
                 fallingEntities.push(get("player")[0], stageFourBackgroundEntity, weightSign)
                 await fallingEntities.forEach(async fallingEntity => {
-                    if (currentRound === 4) {
+                    if (currentRound === 4.5) {
                         tween(
                             fallingEntity.pos,
                             vec2(fallingEntity.pos.x, fallingEntity.pos.y + 2000),
@@ -3625,7 +4260,7 @@ scene("stage_four_elevator", async (playerTag) => {
 
                 })
                 await wait(1)
-                if (currentRound === 4) {
+                if (currentRound === 4.5) {
                     stopMusic(currentSong)
                     play("knocked_down", { loop: false, volume: 1 })
                     go("stage_four_fail", playerTag)
@@ -3832,8 +4467,7 @@ scene("stage_five_b", async (playerTag) => {
     await spawnWave([
         { name: "fadeout" },
         { name: "wait", time: 1 },
-        { name: "venus", yPos: 90 },
-        { name: "grigory", yPos: 90 },
+        { name: "djinn", yPos: 90 },
     ], 2); // Spawns are capped at 1 at a time
 
 
@@ -3868,6 +4502,9 @@ scene("boss_rush", async (playerTag) => {
         { name: "venus", yPos: 90 },
         { name: "fadeout" },
         { name: "wait", time: 1 },
+        { name: "djinn", yPos: 90 },
+        { name: "fadeout" },
+        { name: "wait", time: 1 },
         { name: "fightyMan", yPos: 90 },
     ], 1); // Spawns are capped at 1 at a time
 
@@ -3875,7 +4512,7 @@ scene("boss_rush", async (playerTag) => {
         if (!get("enemy").length) {
             roundEnd.cancel()
             await levelComplete()
-            go("starting_menu", playerTag)
+            go("good_ending", playerTag)
         }
     })
 }
@@ -3888,7 +4525,7 @@ scene("character_select", () => { // Opens up a new scene for the character sele
     stopMusic(currentSong) // Stops the menu theme
     setCursor("default")
 
-    currentSong = play(gameMode === "boss_rush" ? "stage_six" : "character_select", { loop: true, volume: 0.5 })
+    currentSong = play(gameMode === "boss_rush" ? "Boss_Final_Theme" : "character_select", { loop: true, volume: globalVolume })
 
     const chevPositions = [] // Stores the postions the chevrons can be in
 
@@ -4028,7 +4665,8 @@ scene("stage_four_fail", async (playerTag) => {
         if (opacity < 0) opacity = 0; // Ensure opacity doesn't go below 0
         failText.color.a = opacity; // Apply the new opacity
     });
-    await wait(1)
+    await wait(3)
+    await levelComplete()
     go("stage_five_b", playerTag)
 
 
@@ -4113,12 +4751,14 @@ scene("good_ending", async () => {
     if (gameMode !== "stage_select") {
         accountStats.hardest_good = difficulty
     }
-    go("starting_menu")
+    addButton("<", { x: 100, y: 60 }, vec2(width() / 2 - 880, (height() / 2) - 420), () => {
+        play("button")
+        go("starting_menu")
+    })
 
 
 })
 scene("leaderboard", async (data) => {
-    console.log(currentSong)
     if (currentSong !== "leaderboard") {
         stopMusic(currentSong)
         currentSong = play("leaderboard", { loop: true })
@@ -4157,7 +4797,6 @@ scene("leaderboard", async (data) => {
         difficulty++;
         go("leaderboard")
     })
-    console.log("This is the leaderboard:", leaderboardData)
 
     // This searches for the currently logged in player's username and adds it to the memory
     let leaderboardPlacement = 0
@@ -4331,6 +4970,34 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
         pos(vec2((width() / 2), (height() / 2) + 180)),
         anchor("center"),
     ])
+
+    let versionText = add([
+        text("v0.62 @LewisOlley", { align: "center", size: 16 }),
+        color(255, 255, 255),
+        pos(150, 940),
+        anchor("center"),
+    ])
+    let controlsText = add([
+        text("Arrow Keys - Move\n\nZ - Select/Attack\n\nX - Attack 2\n\n C - Special", { align: "center", size: 16 }),
+        color(255, 255, 255),
+        pos(1750, 850),
+        anchor("center"),
+    ])
+
+    fetch('splash.txt')
+        .then(response => response.text())
+        .then(data => {
+            const lines = data.split(/\r?\n/)
+            const randomLine = lines[Math.floor(Math.random() * lines.length)]
+
+            let splashText = add([
+                text(randomLine, { align: "center", size: 16 }),
+                color(255, 0, 0),
+                pos(1500, 90),
+                anchor("center"),
+            ])
+        })
+        .catch(err => console.error('Error fetching file:', err))
     stopMusic(currentSong)
     setCursor("default")
     setBackground(255, 255, 255);
@@ -4371,6 +5038,19 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
         difficulty--;
         difficultyText.text = difficultyNames[difficulty];
     })
+
+    hiddenButton = addButton("II", { x: 130, y: 130 }, vec2(1475, 180), () => {
+        currentSong = play("menu_theme", { loop: true, volume: globalVolume })
+        hiddenButton.destroy()
+        add([
+            text("(", { align: "center", size: 150 }),
+            color(255, 255, 255),
+            pos(1482, 250),
+            anchor("center"),
+            rotate(-90),
+            scale(1, 1.5)
+        ])
+    }, 0)
 
     addButton(">", { x: 80, y: 80 }, vec2((width() / 2) + 285, (height() / 2) + 180), () => {
         if (difficulty === difficultyNames.length - 1) return play("bad");
