@@ -3684,7 +3684,7 @@ scene("arcade", async (playerTag) => {
         )
         oldMan.destroy()
         oldManHitbox.destroy()
-    }, 250)
+    }, 150)
 
     currentSong = play("arcade", { loop: true, volume: 0.5 })
     play("beep")
