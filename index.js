@@ -525,6 +525,7 @@ let currentRound = 1
 let enemyAIBasic = null // Stores the enemy AI in memory when enabled
 let oldManSpawn = null
 let currentSong = play("menu_theme", { loop: true, volume: 0.0 }) // Loops the menu theme while the player is in the menu
+const funRoom = null
 // Initialise a global variable to store the current playing song
 
 class Healthbar {
@@ -2938,6 +2939,7 @@ async function spawnHodson(zSpawn) {
 }
 async function spawnWave(enemyQueue, entityCap) {
     let i = 0;
+    if (game_over) return
     while (enemyQueue.length) { // while the array is not empty
         let spawnedEntities = get("enemy").length // Gets the number of spawned entities
 
