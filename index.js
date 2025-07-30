@@ -786,6 +786,7 @@ async function enableEnemyAI() {
         let bosses = ["ladro", "grigory", "fightyMan", "venus", "hodson", "djinn"]
         enemies.forEach(async enemy => {
             if (enemy.dead) return // Stops the function if the enemy is dead
+            if (enemy.stunned) return
             // Get the player's position
             const player = get("player")[0] // Gets the first entity with the player tag
             if (!player) {
