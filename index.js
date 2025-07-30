@@ -3651,19 +3651,6 @@ scene("arcade", async (playerTag) => {
     stopMusic(currentSong)
     await wait(1.5)
 
-    timerNumber = 37
-    timerText = add(
-        text(timerNumber, { align: "center", size: 22.5 }),
-        color(255, 255, 255),
-        pos(width() / 2, (height() / 2) + 205),
-        anchor("center"),
-        z(4)
-    )
-
-    timer = setInterval(async () => {
-        await wait(1)
-        timerText.text(timerNumber)
-    })
 
     oldManSpawn = setInterval(async () => {
         const oldManDirection = chance(0.5) == 0 ? "left" : "right"
