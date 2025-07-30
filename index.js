@@ -525,6 +525,7 @@ let currentRound = 1
 let enemyAIBasic = null // Stores the enemy AI in memory when enabled
 let oldManSpawn = null
 let currentSong = play("menu_theme", { loop: true, volume: 0.0 }) // Loops the menu theme while the player is in the menu
+let lifeCount = null
 const funRoom = null
 // Initialise a global variable to store the current playing song
 
@@ -2441,10 +2442,32 @@ async function checkDeath(character, attackHitbox) {
         character.move(0, -200)
         character.dead = true // Labels the character as dead, this way they can't move or attack
         if (character.is("player")) {
-            playerControlEvents.keyDown.forEach(keyDownEvent => keyDownEvent.cancel()) // Stops the player from moving
-            playerControlEvents.keyUp.forEach(keyUpEvent => keyUpEvent.cancel()) // Stops the player from moving
-            enemyAIBasic.cancel() // Stops the enemy AI from running
-            gameOver(gameMode)
+            playerControlEvents.keyDown.forEach(keyDownEvent => keyDownEvent.paused = true) // Stops the player from moving
+            playerControlEvents.keyUp.forEach(keyUpEvent => keyUpEvent.paused = true) // Stops the player from moving
+            enemyAIBasic.paused = true
+            lifeCount--
+            if (lifeCount === 0) {
+                await gameOver(gameMode)
+                return
+            }
+            await tween(
+                character.opacity,
+                0,
+                3,
+                (op) => character.opacity = op,
+                easings.easeInCubic
+            )
+            await wait(2)
+            character.play("idle")
+            await tween(
+                character.opacity,
+                1,
+                3,
+                (op) => character.opacity = op,
+                easings.easeInCubic
+            )
+            enemyAIBasic.paused = false
+            character.dead = false
         }
         else deathCount++;
         await tween(
@@ -4650,12 +4673,15 @@ scene("character_select", () => { // Opens up a new scene for the character sele
         play("button")
         selectedCharacter = characterNames[cPos]
         if (gameMode === "main") {
+            lifeCount = 3
             go("stage_one", characterNames[cPos])
         }
         if (gameMode === "boss_rush") {
+            lifeCount = 1
             go("boss_rush", characterNames[cPos])
         }
         if (gameMode === "stage_select") {
+            lifeCount = 3
             go("stage_select", characterNames[cPos])
         }
     })
@@ -5049,6 +5075,7 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
     addButton("Main Game", { x: 290, y: 80 }, vec2(width() / 2, (height() / 2) - 50), () => {
         play("button")
         gameMode = "main"
+
         go("character_select")
     })
     addButton("Boss Rush", { x: 290, y: 80 }, vec2(width() / 2, (height() / 2) + 64), async () => {
