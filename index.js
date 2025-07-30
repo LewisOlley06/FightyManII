@@ -2379,6 +2379,7 @@ async function performAttack(entity, attackName, damageBoxDamage = null, damageB
                 play(`punch${getRandomNumber(3, 4)}`) // Plays a random punch sound effect
                 character.hurt(((entity.attackType === "ladro") ? 20 : 12) * (1 - character.defense)) // Hurts the character by 12 health
                 stun(character, 1)
+                console.log("Stun Called!")
                 if (character.healthbar) character.healthbar.hurt(12 * (1 - character.defense)) // Update the healthbar visual
             }
             if (attackName === "fireShield") {
