@@ -2486,7 +2486,9 @@ function spawnEntity(options, ySpawn) { // Summons an entity at a specific point
             weight: options.attributes.weight || 1,
             defense: options.attributes.defense || 0,
             strength: options.attributes.strength || 1,
-            attackType: options.attributes.attackType || "jab"
+            attackType: options.attributes.attackType || "jab",
+            stunTime: 0,
+            stunned: false
         }
     ]);
 
@@ -2521,7 +2523,6 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             defense: 0,
             strength: options.attributes.strength,
             attackType: options.attributes.attackType || "fire",
-            stunTime: 0
         }
     ]);
     projectile.onUpdate(() => {
