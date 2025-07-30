@@ -525,7 +525,6 @@ let currentRound = 1
 let enemyAIBasic = null // Stores the enemy AI in memory when enabled
 let oldManSpawn = null
 let currentSong = play("menu_theme", { loop: true, volume: 0.0 }) // Loops the menu theme while the player is in the menu
-let lifeCount = null
 const funRoom = null
 // Initialise a global variable to store the current playing song
 
@@ -756,29 +755,6 @@ async function lightningAttack(location) {
 
 
 }
-async function stun(character, time) {
-    console.log("Starting Stun Protocol")
-    if (character.stunned) {
-        console.log("Character already stunned!")
-        character.stunTime = time
-    }
-    else {
-        console.log("Character not yet stunned!")
-        character.stunTime = time
-        console.log("Character Stunned!")
-        while (character.stunTime > 0) {
-            character.stunned = true
-            console.log("Character Stun weaning...")
-            await wait(0.1)
-            character.stunTime = character.stunTime - 0.1
-        }
-        console.log("Character No Longer Stunned!")
-        character.stunned = false
-    }
-}
-
-
-
 
 async function enableEnemyAI() {
     enemyAIBasic = onUpdate(() => {
@@ -787,7 +763,6 @@ async function enableEnemyAI() {
         let bosses = ["ladro", "grigory", "fightyMan", "venus", "hodson", "djinn"]
         enemies.forEach(async enemy => {
             if (enemy.dead) return // Stops the function if the enemy is dead
-            if (enemy.stunned) return
             // Get the player's position
             const player = get("player")[0] // Gets the first entity with the player tag
             if (!player) {
@@ -2371,7 +2346,7 @@ async function performAttack(entity, attackName, damageBoxDamage = null, damageB
                 if (!character.is("player")) { play(`punch${getRandomNumber(1, 2)}`) } // Plays a random punch sound effect
                 else { play(`enemyPunch${character.weight}`) } // Plays a punch sound effect
                 character.hurt(7 * entity.strength * (1 - character.defense))
-                if (character.healthbar) character.healthbar.hurt(7 * entity.strength * (1 - character.defense)) // Update the healthbar visual
+                if ((character.healthbar && currentRound !== 7) || (currentRound === 7 && character.is("player"))) character.healthbar.hurt(7 * entity.strength * (1 - character.defense)) // Update the healthbar visual
             }
 
 
@@ -2379,8 +2354,6 @@ async function performAttack(entity, attackName, damageBoxDamage = null, damageB
                 if (character.dead) continue;
                 play(`punch${getRandomNumber(3, 4)}`) // Plays a random punch sound effect
                 character.hurt(((entity.attackType === "ladro") ? 20 : 12) * (1 - character.defense)) // Hurts the character by 12 health
-                stun(character, 1)
-                console.log("Stun Called!")
                 if (character.healthbar) character.healthbar.hurt(12 * (1 - character.defense)) // Update the healthbar visual
             }
             if (attackName === "fireShield") {
@@ -2442,32 +2415,10 @@ async function checkDeath(character, attackHitbox) {
         character.move(0, -200)
         character.dead = true // Labels the character as dead, this way they can't move or attack
         if (character.is("player")) {
-            playerControlEvents.keyDown.forEach(keyDownEvent => keyDownEvent.paused = true) // Stops the player from moving
-            playerControlEvents.keyUp.forEach(keyUpEvent => keyUpEvent.paused = true) // Stops the player from moving
-            enemyAIBasic.paused = true
-            lifeCount--
-            if (lifeCount === 0) {
-                await gameOver(gameMode)
-                return
-            }
-            await tween(
-                character.opacity,
-                0,
-                3,
-                (op) => character.opacity = op,
-                easings.easeInCubic
-            )
-            await wait(2)
-            character.play("idle")
-            await tween(
-                character.opacity,
-                1,
-                3,
-                (op) => character.opacity = op,
-                easings.easeInCubic
-            )
-            enemyAIBasic.paused = false
-            character.dead = false
+            playerControlEvents.keyDown.forEach(keyDownEvent => keyDownEvent.cancel()) // Stops the player from moving
+            playerControlEvents.keyUp.forEach(keyUpEvent => keyUpEvent.cancel()) // Stops the player from moving
+            enemyAIBasic.cancel() // Stops the enemy AI from running
+            gameOver(gameMode)
         }
         else deathCount++;
         await tween(
@@ -2517,9 +2468,7 @@ function spawnEntity(options, ySpawn) { // Summons an entity at a specific point
             weight: options.attributes.weight || 1,
             defense: options.attributes.defense || 0,
             strength: options.attributes.strength || 1,
-            attackType: options.attributes.attackType || "jab",
-            stunTime: 0,
-            stunned: false
+            attackType: options.attributes.attackType || "jab"
         }
     ]);
 
@@ -2553,7 +2502,7 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             weight: 0,
             defense: 0,
             strength: options.attributes.strength,
-            attackType: options.attributes.attackType || "fire",
+            attackType: options.attributes.attackType || "fire"
         }
     ]);
     projectile.onUpdate(() => {
@@ -4673,15 +4622,12 @@ scene("character_select", () => { // Opens up a new scene for the character sele
         play("button")
         selectedCharacter = characterNames[cPos]
         if (gameMode === "main") {
-            lifeCount = 3
             go("stage_one", characterNames[cPos])
         }
         if (gameMode === "boss_rush") {
-            lifeCount = 1
             go("boss_rush", characterNames[cPos])
         }
         if (gameMode === "stage_select") {
-            lifeCount = 3
             go("stage_select", characterNames[cPos])
         }
     })
@@ -5075,7 +5021,6 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
     addButton("Main Game", { x: 290, y: 80 }, vec2(width() / 2, (height() / 2) - 50), () => {
         play("button")
         gameMode = "main"
-
         go("character_select")
     })
     addButton("Boss Rush", { x: 290, y: 80 }, vec2(width() / 2, (height() / 2) + 64), async () => {
