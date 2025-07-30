@@ -755,6 +755,22 @@ async function lightningAttack(location) {
 
 
 }
+async function stun(character, time) {
+    if (character.stunned) {
+        character.stunTime = time
+    }
+    else {
+        while (character.stunTime > 0) {
+            character.stunned = true
+            await wait(0.1)
+            character.stunTime = character.stunTime - 0.1
+        }
+        character.stunned = false
+    }
+}
+
+
+
 
 async function enableEnemyAI() {
     enemyAIBasic = onUpdate(() => {
@@ -763,6 +779,7 @@ async function enableEnemyAI() {
         let bosses = ["ladro", "grigory", "fightyMan", "venus", "hodson", "djinn"]
         enemies.forEach(async enemy => {
             if (enemy.dead) return // Stops the function if the enemy is dead
+            if (enemy.stunned) return
             // Get the player's position
             const player = get("player")[0] // Gets the first entity with the player tag
             if (!player) {
@@ -2346,7 +2363,7 @@ async function performAttack(entity, attackName, damageBoxDamage = null, damageB
                 if (!character.is("player")) { play(`punch${getRandomNumber(1, 2)}`) } // Plays a random punch sound effect
                 else { play(`enemyPunch${character.weight}`) } // Plays a punch sound effect
                 character.hurt(7 * entity.strength * (1 - character.defense))
-                if ((character.healthbar && currentRound !== 7) || (currentRound === 7 && character.is("player"))) character.healthbar.hurt(7 * entity.strength * (1 - character.defense)) // Update the healthbar visual
+                if (character.healthbar) character.healthbar.hurt(7 * entity.strength * (1 - character.defense)) // Update the healthbar visual
             }
 
 
@@ -2354,6 +2371,7 @@ async function performAttack(entity, attackName, damageBoxDamage = null, damageB
                 if (character.dead) continue;
                 play(`punch${getRandomNumber(3, 4)}`) // Plays a random punch sound effect
                 character.hurt(((entity.attackType === "ladro") ? 20 : 12) * (1 - character.defense)) // Hurts the character by 12 health
+                stun(character, 1)
                 if (character.healthbar) character.healthbar.hurt(12 * (1 - character.defense)) // Update the healthbar visual
             }
             if (attackName === "fireShield") {
@@ -3650,6 +3668,20 @@ scene("arcade", async (playerTag) => {
     ])
     stopMusic(currentSong)
     await wait(1.5)
+
+    timerNumber = 37
+    timerText = add(
+        text(timerNumber, { align: "center", size: 22.5 }),
+        color(255, 255, 255),
+        pos(width() / 2, (height() / 2) + 205),
+        anchor("center"),
+        z(4)
+    )
+
+    timer = setInterval(async () => {
+        await wait(1)
+        timerText.text(timerNumber)
+    })
 
     oldManSpawn = setInterval(async () => {
         const oldManDirection = chance(0.5) == 0 ? "left" : "right"
