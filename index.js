@@ -2520,7 +2520,8 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             weight: 0,
             defense: 0,
             strength: options.attributes.strength,
-            attackType: options.attributes.attackType || "fire"
+            attackType: options.attributes.attackType || "fire",
+            stunTime: 0
         }
     ]);
     projectile.onUpdate(() => {
