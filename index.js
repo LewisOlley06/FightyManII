@@ -756,15 +756,22 @@ async function lightningAttack(location) {
 
 }
 async function stun(character, time) {
+    console.log("Starting Stun Protocol")
     if (character.stunned) {
+        console.log("Character already stunned!")
         character.stunTime = time
     }
     else {
+        console.log("Character not yet stunned!")
+        character.stunTime = time
+        console.log("Character Stunned!")
         while (character.stunTime > 0) {
             character.stunned = true
+            console.log("Character Stun weaning...")
             await wait(0.1)
             character.stunTime = character.stunTime - 0.1
         }
+        console.log("Character No Longer Stunned!")
         character.stunned = false
     }
 }
