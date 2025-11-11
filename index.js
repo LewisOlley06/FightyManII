@@ -752,7 +752,8 @@ async function lightningAttack(location) {
             attackType: "fireball",
         }
     }, vec2(location.x, location.y - 2000), "down", 0.5, false, true, false, location, true)
-
+    await wait(5)
+    destroy(lightning)
 
 }
 
@@ -2720,8 +2721,8 @@ function getEnemyAttributes(entityName, currentRound, difficulty) {
         }
     } else if (entityName === "hodson") {
         enemyAttributes = {
-            health: 180 * difficultyMultiplier,
-            healthbar: 180 * difficultyMultiplier,
+            health: 100 * difficultyMultiplier,
+            healthbar: 100 * difficultyMultiplier,
             aggression: 60 * difficultyMultiplier,
             speed: 6 * difficultyMultiplier,
             weight: 2,
@@ -2918,7 +2919,7 @@ async function spawnDjinn(zSpawn) {
     djinn.play("idle")
 }
 async function spawnHodson(zSpawn) {
-    let maxHealth = 180 * difficultyMultiplier
+    let maxHealth = 100 * difficultyMultiplier
     const hodson = spawnEntity({
         spriteName: "hodson",
         scaleAmount: 6.5,
