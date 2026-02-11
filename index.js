@@ -1294,7 +1294,7 @@ async function enableEnemyAI() {
                         easings.linear
                     )
                     enemy.play("idle")
-                    await wait(0.8 / difficultyMultiplier / healthDifficultyMultiplier)
+                    await wait(1.5 / difficultyMultiplier / healthDifficultyMultiplier)
                     hodsonAttack = getRandomNumber(3, 4)
                     enemy.attackCooldown = false
                 }
@@ -1310,7 +1310,7 @@ async function enableEnemyAI() {
                         easings.linear
                     )
                     enemy.play("idle")
-                    await wait(0.8 / difficultyMultiplier / healthDifficultyMultiplier)
+                    await wait(1.5 / difficultyMultiplier / healthDifficultyMultiplier)
                     hodsonAttack = getRandomNumber(3, 4)
                     enemy.attackCooldown = false
                 }
@@ -1396,7 +1396,7 @@ async function enableEnemyAI() {
                     await tween(
                         enemy.worldPos(),
                         (horizontalDirection === "left") ? vec2(player.worldPos().x - 100, player.worldPos().y) : vec2(player.worldPos().x + 100, player.worldPos().y),
-                        1.5 / (enemy.speed / 5) / difficultyMultiplier / healthDifficultyMultiplier,
+                        2.5 / (enemy.speed / 5) / difficultyMultiplier / healthDifficultyMultiplier,
                         (pos) => enemy.pos = pos,
                         easings.linear
                     )
@@ -2721,8 +2721,8 @@ function getEnemyAttributes(entityName, currentRound, difficulty) {
         }
     } else if (entityName === "hodson") {
         enemyAttributes = {
-            health: 100 * difficultyMultiplier,
-            healthbar: 100 * difficultyMultiplier,
+            health: 80 * difficultyMultiplier,
+            healthbar: 80 * difficultyMultiplier,
             aggression: 60 * difficultyMultiplier,
             speed: 6 * difficultyMultiplier,
             weight: 2,
@@ -2919,7 +2919,7 @@ async function spawnDjinn(zSpawn) {
     djinn.play("idle")
 }
 async function spawnHodson(zSpawn) {
-    let maxHealth = 100 * difficultyMultiplier
+    let maxHealth = 80 * difficultyMultiplier
     const hodson = spawnEntity({
         spriteName: "hodson",
         scaleAmount: 6.5,
