@@ -983,7 +983,7 @@ async function enableEnemyAI() {
                         attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
                     }
                     for (const location of attackLocations) {
-                        spawnProjectile({
+                        djinndicator = spawnProjectile({
                             spriteName: "djinndicator",
                             scaleAmount: 10,
                             hitboxScale: 0,
@@ -992,7 +992,7 @@ async function enableEnemyAI() {
                                 strength: 0,
                                 attackType: "none",
                             }
-                        }, location, "djinndicator", 0, false);
+                        }, location, "djinndicator", 0, false, false, false, null, true);
                     }
 
                     await wait(1)
@@ -2639,9 +2639,10 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
         await wait(1)
         for (let i = 0; i < (20); i++) {
             await wait(0.01, () => projectile.opacity -= 0.05);
-
+            
         }
-
+        projectile.destroy()
+        projectileDamage.cancel()
     }
     projectile.destroy()
     projectileDamage.cancel()
