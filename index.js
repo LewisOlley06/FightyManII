@@ -3193,7 +3193,7 @@ async function levelInit(playerTag, introText, songName, backgrounds) { // Funct
     playerSpeed = selectedCharacter === "grigory" ? 1.5 : 1
     const player = spawnEntity({
         spriteName: selectedCharacter,
-        position: vec2(width() / 2, height() - (currentRound === 4 ? 400 : 200)),
+        position: vec2(width() / 2, height() - (currentRound === 4 ? 800 : 200)),
         scaleAmount: 7.5,
         hitboxScale: 0.5,
         z: 26,
