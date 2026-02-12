@@ -1189,7 +1189,7 @@ async function enableEnemyAI() {
                     await tween(
                         enemy.worldPos(),
                         (horizontalDirection === "left") ? vec2(player.worldPos().x - 100, player.worldPos().y) : vec2(player.worldPos().x + 100, player.worldPos().y),
-                        1 / (enemy.speed / 5) / difficultyMultiplier / healthDifficultyMultiplier,
+                        1.5 / (enemy.speed / 5) / difficultyMultiplier / healthDifficultyMultiplier,
                         (pos) => enemy.pos = pos,
                         easings.linear
                     )
