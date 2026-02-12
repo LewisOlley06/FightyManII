@@ -4981,7 +4981,7 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
     ])
 
     let versionText = add([
-        text("v0.62 @LewisOlley", { align: "center", size: 16 }),
+        text("v0.62.1 @LewisOlley", { align: "center", size: 16 }),
         color(255, 255, 255),
         pos(150, 940),
         anchor("center"),
