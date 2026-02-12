@@ -60,6 +60,7 @@ for (let i = 1; i <= 4; i++) { loadSound(`punch${i}`, `/sounds/FX/punch${i}.wav`
 
 //loading sprites
 loadSprite("menu_bg", `/sprites/backgrounds/menu.png`)
+loadSprite("arcade", `/sprites/backgrounds/arcade.png`)
 loadSprite("johnny_standing1", `/sprites/johnny/standing1.png`)
 loadSprite("fireProj", `/sprites/enemies/fireProjectile.png`)
 loadSprite("ladroDropping", `/sprites/enemies/dropping.png`)
