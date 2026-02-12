@@ -4490,7 +4490,7 @@ scene("stage_five_b", async (playerTag) => {
     })
 })
 scene("boss_rush", async (playerTag) => {
-
+    current_round = 6
     stage_background = "stage_five_a_bg"
     difficultyMultiplier = ((currentRound + (4 + difficulty * 2)) / 10)
 
