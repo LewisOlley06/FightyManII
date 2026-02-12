@@ -3193,7 +3193,7 @@ async function levelInit(playerTag, introText, songName, backgrounds) { // Funct
     playerSpeed = selectedCharacter === "grigory" ? 1.5 : 1
     const player = spawnEntity({
         spriteName: selectedCharacter,
-        position: vec2(width() / 2, height() - (currentRound === 4 ? 800 : 200)),
+        position: vec2(width() / 2, height() - (currentRound === 4 ? 400 : 200)),
         scaleAmount: 7.5,
         hitboxScale: 0.5,
         z: 26,
@@ -3284,8 +3284,8 @@ async function levelInit(playerTag, introText, songName, backgrounds) { // Funct
 }
 
 scene("stage_one", async (playerTag) => { // Opens up a new scene for level one of the game
-    await levelInit(playerTag, "Stage One", "stage_one", ["round1Background", "stage_one_pier_bg"])
     currentRound = 1
+    await levelInit(playerTag, "Stage One", "stage_one", ["round1Background", "stage_one_pier_bg"])
     onKeyPress("p", () => {
         go("stage_two", playerTag)
     })
@@ -3354,6 +3354,7 @@ scene("stage_one", async (playerTag) => { // Opens up a new scene for level one 
 })
 
 scene("stage_two", async (playerTag, arcade = true) => {
+    currentRound = 2
     const bg1 = add([
         sprite("stage_two_bg"),
         pos(0, 0),
@@ -3413,7 +3414,7 @@ scene("stage_two", async (playerTag, arcade = true) => {
         }
     })
 
-    currentRound = 2
+
     oldManSpawn = setInterval(async () => { //old man spawns every 10 seconds (background decoration)
         const oldManDirection = chance(0.5) == 0 ? "left" : "right"
         const oldMan = add([
@@ -3817,7 +3818,6 @@ scene("arcade", async (playerTag) => {
 
 
 scene("deliveryManFail", async (playerTag) => {
-    currentRound = 6
     let background1 = add([
         sprite("dark"),
         pos(0, 0),
@@ -3853,8 +3853,9 @@ scene("deliveryManFail", async (playerTag) => {
 
 
 scene("stage_three", async (playerTag) => {
-    await levelInit(playerTag, "Stage Three", "stage_three", ["stage_three_bg"])
     currentRound = 3
+    await levelInit(playerTag, "Stage Three", "stage_three", ["stage_three_bg"])
+
 
 
     onKeyPress("p", () => {
@@ -3929,6 +3930,7 @@ scene("stage_three", async (playerTag) => {
 
 
 scene("stage_four", async (playerTag) => {
+    currentRound = 4
     const bg1 = add([
         sprite("stage_four_1"),
         pos(0, 0),
@@ -3948,7 +3950,7 @@ scene("stage_four", async (playerTag) => {
 
 
 
-    currentRound = 4
+
     onKeyPress("p", () => {
         clearInterval(oldManSpawn)
         go("stage_four_elevator", playerTag)
