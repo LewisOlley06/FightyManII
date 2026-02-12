@@ -91,7 +91,7 @@ loadSprite("stage_four_2", "/sprites/backgrounds/Stage4-2.png")
 loadSprite("stage_four_bg2", "/sprites/backgrounds/Stage4BG.png")
 loadSprite("stage_four_bg", "/sprites/backgrounds/Stage4FG.png")
 loadSprite("stage_four_side", "/sprites/backgrounds/Stage4Side.png")
-loadSprite("arcade", "/sprites/backgrounds/arcade.png")
+loadSprite("", "/sprites/backgrounds/.png")
 loadSprite("deliveryManBackground", "/sprites/backgrounds/deliveryMan.png")
 loadSprite("stage_five_a_bg", "/sprites/backgrounds/Stage5a.png")
 loadSprite("stage_five_b_bg", "/sprites/backgrounds/Stage5b.png")
@@ -509,7 +509,7 @@ let game_over = false
 let stageFourBackgroundEntity = null // Stores the object of the moving background in Stage 4
 let bgMoving = false // Stores the boolean value of whether the background is moving in Stage 2
 let difficultyMultiplier = 0.9 // Stores the value of the enemy difficulty multiplier
-let arcadeAccess = true
+let Access = true
 let selectedCharacter = null // Stores the value of the selected character, used for round starts
 let fightyManAttack = 2 // Stores the default value of the Final Boss' first attack
 let djinnAttack = 1
@@ -3487,6 +3487,7 @@ scene("stage_two", async (playerTag, arcade = true) => {
         { name: "joseph", yPos: 120 },
     ], 4) // Spawns are capped at 4 at a time
 
+    arcadeAccess = false
     const moveStart = onUpdate(async () => {
         if (!get("enemy").length) {
             moveStart.cancel()
