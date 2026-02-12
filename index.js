@@ -992,7 +992,7 @@ async function enableEnemyAI() {
                                 strength: 0,
                                 attackType: "none",
                             }
-                        }, location, "djinndicator", 0, false, false, false, null, true);
+                        }, location, "djinndicator", 0, false);
                     }
 
                     await wait(1)
@@ -2638,13 +2638,11 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
     if (lightningType === true) {
         await wait(1)
         for (let i = 0; i < (20); i++) {
-            await wait(0.01, () => projectile.opacity -= 0.05);
-            
+            await wait(0.01, () => projectile.opacity -= 0.05); 
         }
-        projectile.destroy()
-        projectileDamage.cancel()
     }
     projectile.destroy()
+    console.log("Projectile Destroyed!")
     projectileDamage.cancel()
 
 
@@ -4981,7 +4979,7 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
     ])
 
     let versionText = add([
-        text("v0.62.1 @LewisOlley", { align: "center", size: 16 }),
+        text("v0.62.2 @LewisOlley", { align: "center", size: 16 }),
         color(255, 255, 255),
         pos(150, 940),
         anchor("center"),
