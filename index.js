@@ -2563,6 +2563,7 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
+        projectile.destroy()
     }
     else if (direction === "right") {
         await tween(
@@ -2572,6 +2573,7 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
+        projectile.destroy()
     }
     else if (direction === "down") {
         await tween(
@@ -2581,6 +2583,7 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
+        projectile.destroy()
     }
     else if (direction === "up") {
         await tween(
@@ -2590,6 +2593,7 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
+        projectile.destroy()
     }
     else if (direction === "southWest") {
         await tween(
@@ -2599,6 +2603,7 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
+        projectile.destroy()
     }
     else if (direction === "southEast") {
         await tween(
@@ -2608,6 +2613,7 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
+        projectile.destroy()
     }
     else if (direction === "northWest") {
         await tween(
@@ -2617,6 +2623,7 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
+        projectile.destroy()
     }
     else if (direction === "northEast") {
         await tween(
@@ -2626,6 +2633,7 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
+        projectile.destroy()
     }
     else if (direction === "djinndicator") {
         await projectile.play("charge")
