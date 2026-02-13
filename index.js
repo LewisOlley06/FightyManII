@@ -2507,6 +2507,7 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             attackType: options.attributes.attackType || "fire"
         }
     ]);
+    projectile.offscreen({ destroy: true })
     projectile.onUpdate(() => {
         const y = projectile.pos.y
         projectile.z = (y - 460) / 10
@@ -2648,6 +2649,9 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
         for (let i = 0; i < (20); i++) {
             await wait(0.01, () => projectile.opacity -= 0.05); 
         }
+        projectile.destroy()
+        console.log("Projectile Destroyed!")
+        projectileDamage.cancel()
     }
     projectile.destroy()
     console.log("Projectile Destroyed!")
@@ -4987,7 +4991,7 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
     ])
 
     let versionText = add([
-        text("v0.62.2 @LewisOlley", { align: "center", size: 16 }),
+        text("v0.62.21 @LewisOlley", { align: "center", size: 16 }),
         color(255, 255, 255),
         pos(170, 940),
         anchor("center"),
