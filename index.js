@@ -2648,9 +2648,6 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
         for (let i = 0; i < (20); i++) {
             await wait(0.01, () => projectile.opacity -= 0.05); 
         }
-        projectile.destroy()
-        console.log("Projectile Destroyed!")
-        projectileDamage.cancel()
     }
     projectile.destroy()
     console.log("Projectile Destroyed!")
