@@ -2507,7 +2507,6 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             attackType: options.attributes.attackType || "fire"
         }
     ]);
-    projectile.offscreen({ destroy: true })
     projectile.onUpdate(() => {
         const y = projectile.pos.y
         projectile.z = (y - 460) / 10
@@ -4991,7 +4990,7 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
     ])
 
     let versionText = add([
-        text("v0.62.21 @LewisOlley", { align: "center", size: 16 }),
+        text("v0.62.22 @LewisOlley", { align: "center", size: 16 }),
         color(255, 255, 255),
         pos(170, 940),
         anchor("center"),
