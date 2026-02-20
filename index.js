@@ -2854,7 +2854,12 @@ async function spawnGary(zSpawn) {
         attributes: getEnemyAttributes("gary", currentRound, difficulty),
         tag: "enemy"
     }, zSpawn)
-    gary.play("idle")
+    try {
+  gary.play("idle")
+} catch (error) {
+  pass
+}
+        
 }
 async function spawnDavid(zSpawn) {
     const david = spawnEntity({
@@ -4987,7 +4992,7 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
     ])
 
     let versionText = add([
-        text("v0.62.22 @LewisOlley", { align: "center", size: 16 }),
+        text("v0.62.23 @LewisOlley", { align: "center", size: 16 }),
         color(255, 255, 255),
         pos(170, 940),
         anchor("center"),
