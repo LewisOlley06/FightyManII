@@ -2012,7 +2012,11 @@ async function gameOver(gameMode) {
     currentSong = play("game_over", { loop: false, volume: 0.5 }) // Stops the music, plays the game over jingle
     if (currentRound === 2) {
         clearInterval(oldManSpawn)
-        funRoom.cancel()
+        try {
+  funRoom.cancel()
+} catch (error) {
+  pass
+}
     }
     await toggleDarkOverlay(false)
     await Promise.all([ // Wait for both texts to finish animating
