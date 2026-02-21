@@ -743,7 +743,7 @@ async function getLeaderboard(difficultyIndex) {
 }
 
 async function lightningAttack(location) {
-    lightning = spawnProjectile({
+    spawnProjectile({
         spriteName: "lightning",
         scaleAmount: 11,
         hitboxScale: 0,
@@ -753,8 +753,6 @@ async function lightningAttack(location) {
             attackType: "fireball",
         }
     }, vec2(location.x, location.y - 2000), "down", 0.5, false, true, false, location, true)
-    await wait(5)
-    destroy(lightning)
 
 }
 
@@ -874,8 +872,9 @@ async function enableEnemyAI() {
                     await enemy.play("tpEnd")
                     await wait(0.7)
                     enemy.play("idle")
-                    await wait(1 / difficultyMultiplier / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
+                    await wait(1 / (difficultyMultiplier * 1.5) / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
                     djinnAttack = getRandomNumber(1, 5)
+                    destroyAll("projectile")
                     enemy.attackCooldown = false
                 }
                 if (djinnAttack === 3) { // Initiates the chaos balls attack
@@ -972,18 +971,9 @@ async function enableEnemyAI() {
                     attackLocations = [vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)), vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)), vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800))]
                     if (difficulty >= 3) {
                         attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
-                        attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
-                        attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
-                        attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
-                    }
-                    if (difficulty >= 4) {
-                        attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
-                        attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
-                        attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
-                        attackLocations.push(vec2(getRandomNumber(200, 1800), getRandomNumber(600, 800)))
                     }
                     for (const location of attackLocations) {
-                        djinndicator = spawnProjectile({
+                        spawnProjectile({
                             spriteName: "djinndicator",
                             scaleAmount: 10,
                             hitboxScale: 0,
@@ -1009,7 +999,7 @@ async function enableEnemyAI() {
 
                     await Promise.all(attackPromises);
                     enemy.play("idle")
-                    djinnAttack = getRandomNumber(1, 5)
+                    djinnAttack = getRandomNumber(1, 3)
                     enemy.attackCooldown = false
                 }
                 if (djinnAttack === 5) {
@@ -1980,7 +1970,7 @@ async function switchToLoop2() {
     const timeUntilNextBar = barDuration - (currentTime % barDuration);
 
     // Wait until the next bar starts
-    await wait(timeUntilNextBar - 0.05);
+    await wait(timeUntilNextBar - 0.1);
 
     // Switch to FinalBossLoop2
 
@@ -2013,10 +2003,10 @@ async function gameOver(gameMode) {
     if (currentRound === 2) {
         clearInterval(oldManSpawn)
         try {
-  funRoom.cancel()
-} catch (error) {
-  pass
-}
+            funRoom.cancel()
+        } catch (error) {
+            pass
+        }
     }
     await toggleDarkOverlay(false)
     await Promise.all([ // Wait for both texts to finish animating
@@ -2276,7 +2266,7 @@ async function performAttack(entity, attackName, damageBoxDamage = null, damageB
                 opacity(0),
                 "atkHitbox"
             ])
-            destroyHitbox(attackHitbox)
+            attackHitbox.destroy()
         })
     }
 
@@ -2447,15 +2437,15 @@ function spawnEntity(options, ySpawn) { // Summons an entity at a specific point
     if (game_over === true) return
     let spawnX = chance(0.5) === true ? 0 : 1920 // Randomly picks a side to spawn the entity on
     let bossesList = ["fightyMan", "venus", "grigory"]
-    if (bossesList.indexOf(options.attributes.attackType) !== -1) {
-        spawnX = 2000;
-    }
     if (currentRound === 4) {
         ySpawn = getRandomNumber(0, 20)
     }
     if (currentRound === 4.5) {
         spawnX = chance(0.5) === true ? 600 : 1300
         ySpawn = getRandomNumber(-240, 260)
+    }
+    if (bossesList.indexOf(options.attributes.attackType) !== -1) {
+        spawnX = 2000;
     }
     let entity = add([
         sprite(options.spriteName), // Renders as a sprite
@@ -2485,6 +2475,7 @@ function spawnEntity(options, ySpawn) { // Summons an entity at a specific point
 }
 
 async function spawnProjectile(options, spawnPos, direction, velocity, shotgun = false, linear = false, damagesEnemies = false, stopPoint = null, lightningType = false) { // Summons an entity at a specific point with a sprite and AI type
+    console.log(get("projectile"))
     let rotation = 0
     let player = get("player")[0]
     if (direction === "left" && options.attributes.attackType === "firebar") rotation = 90
@@ -2512,6 +2503,7 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
         }
     ]);
     projectile.onUpdate(() => {
+
         const y = projectile.pos.y
         projectile.z = (y - 460) / 10
     })
@@ -2567,7 +2559,7 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
-        projectile.destroy()
+
     }
     else if (direction === "right") {
         await tween(
@@ -2577,7 +2569,6 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
-        projectile.destroy()
     }
     else if (direction === "down") {
         await tween(
@@ -2587,7 +2578,6 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
-        projectile.destroy()
     }
     else if (direction === "up") {
         await tween(
@@ -2597,7 +2587,6 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
-        projectile.destroy()
     }
     else if (direction === "southWest") {
         await tween(
@@ -2607,7 +2596,6 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
-        projectile.destroy()
     }
     else if (direction === "southEast") {
         await tween(
@@ -2617,7 +2605,6 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
-        projectile.destroy()
     }
     else if (direction === "northWest") {
         await tween(
@@ -2627,7 +2614,6 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
-        projectile.destroy()
     }
     else if (direction === "northEast") {
         await tween(
@@ -2637,7 +2623,6 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
             (pos) => projectile.pos = pos,
             linear ? easings.easeLinear : easings.easeInOutCubic
         )
-        projectile.destroy()
     }
     else if (direction === "djinndicator") {
         await projectile.play("charge")
@@ -2646,15 +2631,16 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
         await wait(1)
         lightningAttack(projectile.pos)
         await wait(0.5)
+        projectile.destroy()
     }
     if (lightningType === true) {
         await wait(1)
         for (let i = 0; i < (20); i++) {
-            await wait(0.01, () => projectile.opacity -= 0.05); 
+            await wait(0.01, () => projectile.opacity -= 0.05);
         }
+        projectile.destroy()
     }
     projectile.destroy()
-    console.log("Projectile Destroyed!")
     projectileDamage.cancel()
 
 
@@ -2859,11 +2845,11 @@ async function spawnGary(zSpawn) {
         tag: "enemy"
     }, zSpawn)
     try {
-  gary.play("idle")
-} catch (error) {
-  pass
-}
-        
+        gary.play("idle")
+    } catch (error) {
+        pass
+    }
+
 }
 async function spawnDavid(zSpawn) {
     const david = spawnEntity({
@@ -4996,7 +4982,7 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
     ])
 
     let versionText = add([
-        text("v0.62.23 @LewisOlley", { align: "center", size: 16 }),
+        text("v0.62.24 @LewisOlley", { align: "center", size: 16 }),
         color(255, 255, 255),
         pos(170, 940),
         anchor("center"),
