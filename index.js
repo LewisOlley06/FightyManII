@@ -2479,7 +2479,7 @@ async function checkDeath(character, attackHitbox) {
                 easings.easeInCubic
             )
             await wait(0.5, () => character.destroy())
-            if (gameMode === "boss_rush" && bosses.includes(character.attackType) || (character.attackType === "djinn" && currentRound === 7)) {
+            if (gameMode === "boss_rush" && bosses.includes(character.attackType) || (character.attackType === "djinn" && currentRound === 6)) {
                 character.healthbar.destroy()
             }
         }
@@ -4492,7 +4492,7 @@ scene("stage_five_a", async (playerTag) => {
 })
 
 scene("stage_five_b", async (playerTag) => {
-    currentRound = 6
+    currentRound = 5
     finalRound = true
     await levelInit(playerTag, "Stage Five", "stage_five_b", ["stage_five_b_bg"])
 
@@ -5165,7 +5165,7 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
     ])
 
     let versionText = add([
-        text("v0.71.1 @LewisOlley", { align: "center", size: 16 }),
+        text("v0.71.11 @LewisOlley", { align: "center", size: 16 }),
         color(255, 255, 255),
         pos(170, 940),
         anchor("center"),
