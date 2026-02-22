@@ -1257,7 +1257,7 @@ async function enableEnemyAI() {
                             }
                         }, vec2(2000, getRandomNumber(500, 900)), "right", 10, false, true)
                     }
-                   if (finalRound === true) await wait(0.8)
+                    if (finalRound === true) await wait(0.8)
                     if (horizontalDirection === "right" || finalRound === true) {
                         play("fireLong")
                         spawnProjectile({
@@ -2415,6 +2415,7 @@ async function checkDeath(character, attackHitbox) {
 
 
         if (character.attackType === "fightyMan") {
+            enemyAIBasic.cancel()
             character.move(0, -200)
             tween(
                 character.worldPos(),
@@ -4483,8 +4484,8 @@ scene("stage_five_a", async (playerTag) => {
             play("FinalBossOutro")
             await wait(15)
             await levelComplete()
-            if(gameMode = "main") go("stage_six", playerTag)
-            else{
+            if (gameMode = "main") go("stage_six", playerTag)
+            else {
                 go("starting_menu")
             }
         }
