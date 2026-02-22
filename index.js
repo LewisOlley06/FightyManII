@@ -618,7 +618,7 @@ class Healthbar {
     hurt(amount) {
         if (this.bottomTween) this.bottomTween.finish();
         if (this.topTween) this.topTween.finish();
-
+        console.log("Damage taken!")
         this.health -= amount;
         if (this.health > this.maxHealth) this.health = this.maxHealth
         let newWidth = (this.health / this.maxHealth) * 386;
