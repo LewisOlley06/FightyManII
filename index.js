@@ -4565,8 +4565,7 @@ scene("stage_six", async (playerTag) => {
     let finalBossSpawned = false
     fightyManDead = false
     await levelInit(playerTag, "Stage Six", "stage_six", ["stage_six"])
-    currentRound = 7
-    console.log(currentRound)
+    currentRound = 6
 
     onKeyPress("p", () => {
         go("stage_one", playerTag)
@@ -5166,7 +5165,7 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
     ])
 
     let versionText = add([
-        text("v0.71.0 @LewisOlley", { align: "center", size: 16 }),
+        text("v0.71.1 @LewisOlley", { align: "center", size: 16 }),
         color(255, 255, 255),
         pos(170, 940),
         anchor("center"),
