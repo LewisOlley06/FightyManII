@@ -1020,7 +1020,6 @@ async function enableEnemyAI() {
             if (enemy.attackType === "fightyMan") { //If the enemy is the final boss, initiate Final Boss AI.
                 let maxHealth = enemy.healthbar.maxHealth
                 healthDifficultyMultiplier = 1 + (enemy.healthbar.maxHealth - enemy.hp()) / enemy.healthbar.maxHealth;
-                if (!finalRound) healthDifficultyMultiplier = 0.7 * healthDifficultyMultiplier
                 if (enemy.attackCooldown === true) return
                 if (enemy.dead) return
                 enemy.collisionIgnore.push("enemy")
@@ -2748,8 +2747,8 @@ function getEnemyAttributes(entityName, currentRound, difficulty) {
         }
     } else if (entityName === "fightyMan") {
         enemyAttributes = {
-            health: 400 * difficultyMultiplier,
-            healthbar: 400 * difficultyMultiplier,
+            health: 500,
+            healthbar: 500,
             aggression: 60 * difficultyMultiplier,
             speed: 7 * difficultyMultiplier,
             weight: 2,
@@ -2921,7 +2920,7 @@ async function spawnDavid(zSpawn) {
     david.play("idle")
 }
 async function spawnFightyMan(zSpawn) {
-    let maxHealth = 400 * difficultyMultiplier
+    let maxHealth = 500
     const fightyMan = spawnEntity({
         spriteName: "fightyMan",
         scaleAmount: 7.5,
@@ -4484,9 +4483,9 @@ scene("stage_five_a", async (playerTag) => {
             play("FinalBossOutro")
             await wait(15)
             await levelComplete()
-            if(gamemode === "main") go("stage_six", playerTag)
+            if(gameMode = "main") go("stage_six", playerTag)
             else{
-                go("starting_menu") 
+                go("starting_menu")
             }
         }
     })
@@ -5167,7 +5166,7 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
     ])
 
     let versionText = add([
-        text("v0.63.0 @LewisOlley", { align: "center", size: 16 }),
+        text("v0.71.0 @LewisOlley", { align: "center", size: 16 }),
         color(255, 255, 255),
         pos(170, 940),
         anchor("center"),
