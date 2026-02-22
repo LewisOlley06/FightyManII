@@ -42,6 +42,7 @@ loadSound("Boss_Final_Theme", "/sounds/Boss_Final_Theme.mp3")
 loadSound("FinalBossIntro", "/sounds/FinalBossIntro.mp3")
 loadSound("FinalBossLoop1", "/sounds/FinalBossLoop1.mp3")
 loadSound("FinalBossLoop2", "/sounds/FinalBossLoop2.mp3")
+loadSound("FinalBossOutro", "/sounds/FinalBossOutro.mp3")
 loadSound("leaderboard", "/sounds/leaderboard.mp3")
 loadSound("button", "/sounds/FX/button.mp3")
 loadSound("level_complete", "/sounds/level_complete.mp3")
@@ -96,6 +97,7 @@ loadSprite("", "/sprites/backgrounds/.png")
 loadSprite("deliveryManBackground", "/sprites/backgrounds/deliveryMan.png")
 loadSprite("stage_five_a_bg", "/sprites/backgrounds/Stage5a.png")
 loadSprite("stage_five_b_bg", "/sprites/backgrounds/Stage5b.png")
+loadSprite("stage_six", "/sprites/backgrounds/Stage6.png")
 
 loadSpriteAtlas("/sprites/ui/weightLimit.png", {
     "weightLimitSprite": {
@@ -523,10 +525,12 @@ let difficultyNames = ["Easiest Difficulty", "Easy Difficulty", "Normal Difficul
 let difficulty = 2 // Default difficulty is normal (2)
 let gameMode = null // Stores the current game mode (either "main", "infinity" or "stage_select")
 let currentRound = 1
+let finalRound = false
 let enemyAIBasic = null // Stores the enemy AI in memory when enabled
 let oldManSpawn = null
 let currentSong = play("menu_theme", { loop: true, volume: 0.0 }) // Loops the menu theme while the player is in the menu
 const funRoom = null
+let fightyManDead = false
 // Initialise a global variable to store the current playing song
 
 class Healthbar {
@@ -554,7 +558,7 @@ class Healthbar {
 
         this.healthbarImage = add([
             sprite(this.icon),
-            pos(this.position.x + 30, this.position.y + 135),
+            pos(this.position.x + 30, this.position.y + 133),
             z(19),
             scale(scaleSize),
             "healthbarImage"
@@ -1016,6 +1020,7 @@ async function enableEnemyAI() {
             if (enemy.attackType === "fightyMan") { //If the enemy is the final boss, initiate Final Boss AI.
                 let maxHealth = enemy.healthbar.maxHealth
                 healthDifficultyMultiplier = 1 + (enemy.healthbar.maxHealth - enemy.hp()) / enemy.healthbar.maxHealth;
+                if (!finalRound) healthDifficultyMultiplier = 0.7 * healthDifficultyMultiplier
                 if (enemy.attackCooldown === true) return
                 if (enemy.dead) return
                 enemy.collisionIgnore.push("enemy")
@@ -1023,6 +1028,7 @@ async function enableEnemyAI() {
 
                 if (fightyManAttack === 1) { // Initiates the walking right animation
                     enemy.attackCooldown = true
+                    if (enemy.dead) return
                     if (enemy.curAnim() !== "walking") enemy.play("walking")
                     await tween(
                         enemy.worldPos(),
@@ -1039,7 +1045,7 @@ async function enableEnemyAI() {
                 }
 
                 if (fightyManAttack === 2) { // Initiates the walking left animation
-
+                    if (enemy.dead) return
                     enemy.attackCooldown = true
                     if (enemy.curAnim() !== "walking") enemy.play("walking")
                     await tween(
@@ -1055,96 +1061,108 @@ async function enableEnemyAI() {
                     enemy.attackCooldown = false
                 }
                 if (fightyManAttack === 3) { // Initiates the fireballs attack
-                    enemy.attackCooldown = true
-                    await wait(0.5 / difficultyMultiplier / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
-
-                    const playerPos = player.worldPos() // Gets the player's position
-                    const enemyPos = enemy.worldPos() // Gets the enemy's position
-
-                    let horizontalDirection = null // Stores the horizontal direction of the enemy
-                    if (enemyPos.x < playerPos.x) horizontalDirection = "left"; // Checks whether the entity is to the left of the player
-                    if (enemyPos.x >= playerPos.x) horizontalDirection = "right"; // Checks whether the entity is to the right of the player
-                    if (enemyPos.y < playerPos.y) verticalDirection = "down"; // Checks whether the entity is to the lower of the player
-                    if (enemyPos.y >= playerPos.y) verticalDirection = "up"; // Checks whether the entity is to the upper of the player
-
-                    if (horizontalDirection === "left") {
-                        enemy.flipX = false
-                        fireballDown = "southEast"
+                    if (!finalRound) {
+                        fightyManAttack = 5
+                        console.log(finalRound)
                     }
-                    if (horizontalDirection === "right") {
-                        enemy.flipX = true
-                        fireballDown = "southWest"
+                    else {
+                        if (enemy.dead) return
+                        enemy.attackCooldown = true
+                        await wait(0.5 / difficultyMultiplier / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
+
+                        const playerPos = player.worldPos() // Gets the player's position
+                        const enemyPos = enemy.worldPos() // Gets the enemy's position
+
+                        let horizontalDirection = null // Stores the horizontal direction of the enemy
+                        if (enemyPos.x < playerPos.x) horizontalDirection = "left"; // Checks whether the entity is to the left of the player
+                        if (enemyPos.x >= playerPos.x) horizontalDirection = "right"; // Checks whether the entity is to the right of the player
+                        if (enemyPos.y < playerPos.y) verticalDirection = "down"; // Checks whether the entity is to the lower of the player
+                        if (enemyPos.y >= playerPos.y) verticalDirection = "up"; // Checks whether the entity is to the upper of the player
+
+                        if (horizontalDirection === "left") {
+                            enemy.flipX = false
+                            fireballDown = "southEast"
+                        }
+                        if (horizontalDirection === "right") {
+                            enemy.flipX = true
+                            fireballDown = "southWest"
+                        }
+                        enemy.play("fireProj")
+                        if (enemy.dead) return
+                        play("fireShort")
+                        spawnProjectile({
+                            spriteName: "fireProj",
+                            scaleAmount: 5,
+                            hitboxScale: 0.5,
+                            health: 999,
+                            attributes: {
+                                strength: 5 * healthDifficultyMultiplier,
+                                attackType: "fireball",
+                            }
+                        }, enemyPos, horizontalDirection, 3, false, true)
+                        if (enemy.dead) return
+                        await wait(0.1)
+                        spawnProjectile({
+                            spriteName: "fireProj",
+                            scaleAmount: 5,
+                            hitboxScale: 0.5,
+                            health: 999,
+                            attributes: {
+                                strength: 5 * healthDifficultyMultiplier,
+                                attackType: "fireball",
+                            }
+                        }, enemyPos, fireballDown, 3, false, true)
+                        await wait(0.1)
+                        if (enemy.dead) return
+                        spawnProjectile({
+                            spriteName: "fireProj",
+                            scaleAmount: 5,
+                            hitboxScale: 0.5,
+                            health: 999,
+                            attributes: {
+                                strength: 5 * healthDifficultyMultiplier,
+                                attackType: "fireball",
+                            }
+                        }, enemyPos, "down", 3, false, true)
+                        await wait(0.1)
+                        if (enemy.dead) return
+                        spawnProjectile({
+                            spriteName: "fireProj",
+                            scaleAmount: 5,
+                            hitboxScale: 0.5,
+                            health: 999,
+                            attributes: {
+                                strength: 5 * healthDifficultyMultiplier,
+                                attackType: "fireball",
+                            }
+                        }, enemyPos, fireballDown, 3, false, true)
+                        await wait(0.1)
+                        if (enemy.dead) return
+                        spawnProjectile({
+                            spriteName: "fireProj",
+                            scaleAmount: 5,
+                            hitboxScale: 0.5,
+                            health: 999,
+                            attributes: {
+                                strength: 5 * healthDifficultyMultiplier,
+                                attackType: "fireball",
+                            }
+                        }, enemyPos, horizontalDirection, 3, false, true)
+
+                        const distance = Math.sqrt(Math.pow(enemyPos.x - playerPos.x, 2) + Math.pow(enemyPos.y - playerPos.y, 2)) // Calculates the distance between the player and the enemy
+
+                        if (horizontalDirection === "left") fightyManAttack = 1
+                        if (horizontalDirection === "right") fightyManAttack = 2
+                        if (getRandomNumber(1, 2) === 2) fightyManAttack = 5
+                        if (getRandomNumber(1, 2) === 2) fightyManAttack = 6
+                        if (getRandomNumber(1, 2) === 2) fightyManAttack = 4
+                        if (distance < 150) fightyManAttack = 4
+
+                        enemy.attackCooldown = false
                     }
-                    enemy.play("fireProj")
-
-                    play("fireShort")
-                    spawnProjectile({
-                        spriteName: "fireProj",
-                        scaleAmount: 5,
-                        hitboxScale: 0.5,
-                        health: 999,
-                        attributes: {
-                            strength: 5 * healthDifficultyMultiplier,
-                            attackType: "fireball",
-                        }
-                    }, enemyPos, horizontalDirection, 3, false, true)
-                    await wait(0.1)
-                    spawnProjectile({
-                        spriteName: "fireProj",
-                        scaleAmount: 5,
-                        hitboxScale: 0.5,
-                        health: 999,
-                        attributes: {
-                            strength: 5 * healthDifficultyMultiplier,
-                            attackType: "fireball",
-                        }
-                    }, enemyPos, fireballDown, 3, false, true)
-                    await wait(0.1)
-                    spawnProjectile({
-                        spriteName: "fireProj",
-                        scaleAmount: 5,
-                        hitboxScale: 0.5,
-                        health: 999,
-                        attributes: {
-                            strength: 5 * healthDifficultyMultiplier,
-                            attackType: "fireball",
-                        }
-                    }, enemyPos, "down", 3, false, true)
-                    await wait(0.1)
-                    spawnProjectile({
-                        spriteName: "fireProj",
-                        scaleAmount: 5,
-                        hitboxScale: 0.5,
-                        health: 999,
-                        attributes: {
-                            strength: 5 * healthDifficultyMultiplier,
-                            attackType: "fireball",
-                        }
-                    }, enemyPos, fireballDown, 3, false, true)
-                    await wait(0.1)
-                    spawnProjectile({
-                        spriteName: "fireProj",
-                        scaleAmount: 5,
-                        hitboxScale: 0.5,
-                        health: 999,
-                        attributes: {
-                            strength: 5 * healthDifficultyMultiplier,
-                            attackType: "fireball",
-                        }
-                    }, enemyPos, horizontalDirection, 3, false, true)
-
-                    const distance = Math.sqrt(Math.pow(enemyPos.x - playerPos.x, 2) + Math.pow(enemyPos.y - playerPos.y, 2)) // Calculates the distance between the player and the enemy
-
-                    if (horizontalDirection === "left") fightyManAttack = 1
-                    if (horizontalDirection === "right") fightyManAttack = 2
-                    if (getRandomNumber(1, 2) === 2) fightyManAttack = 5
-                    if (getRandomNumber(1, 2) === 2) fightyManAttack = 6
-                    if (getRandomNumber(1, 2) === 2) fightyManAttack = 4
-                    if (distance < 150) fightyManAttack = 4
-
-                    enemy.attackCooldown = false
                 }
                 if (fightyManAttack === 4) { // Initiates the fireshield attack
+                    if (enemy.dead) return
                     enemy.attackCooldown = true
                     play("flamethrower")
                     await performAttack(enemy, "fireShield")
@@ -1169,6 +1187,7 @@ async function enableEnemyAI() {
                     enemy.attackCooldown = false
                 }
                 if (fightyManAttack === 5) { // Initiates the firePunch attack
+                    if (enemy.dead) return
                     enemy.attackCooldown = true
                     if (enemy.curAnim() !== "walking") enemy.play("walking")
                     const playerPos = player.worldPos() // Gets the player's position
@@ -1177,6 +1196,7 @@ async function enableEnemyAI() {
                     if (enemyPos.x >= playerPos.x) horizontalDirection = "right"; // Checks whether the entity is to the right of the player
 
                     play("fireShort")
+                    if (enemy.dead) return
                     await tween(
                         enemy.worldPos(),
                         (horizontalDirection === "left") ? vec2(player.worldPos().x - 100, player.worldPos().y) : vec2(player.worldPos().x + 100, player.worldPos().y),
@@ -1192,7 +1212,7 @@ async function enableEnemyAI() {
                 }
                 if (fightyManAttack === 6) { // Initiates the firewalls attack
                     enemy.attackCooldown = true
-
+                    if (enemy.dead) return
                     await wait(0.5 / difficultyMultiplier / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
 
                     const playerPos = player.worldPos() // Gets the player's position
@@ -2393,41 +2413,80 @@ async function checkDeath(character, attackHitbox) {
         if (character.dead) return;
         bosses = ["venus", "fightyMan", "hodson", "ladro", "grigory", "djinn"]
         if (!bosses.includes(character.attackType)) { character.play("downed") }
-        if (character.attackType === "fightyMan") character.play("fireShield")
-        if (character.attackType === "hodson") character.play("idle")
-        if (character.attackType === "djinn") character.play("tpStart")
-        if (character.attackType === "ladro") character.play("downed")
-        if (character.attackType === "grigory") character.play("downed")
-        tween(
-            character.worldPos(),
-            vec2(character.worldPos().x + (character.flipX ? 150 : -150), character.worldPos().y),
-            0.4,
-            (pos) => character.pos = pos,
-            easings.easeOutCubic
-        )
-        deathSoundNumber = getRandomNumber(1, 2)
-        play(`enemyDeath${deathSoundNumber}`, { detune: (getRandomNumber(1, (8 / deathSoundNumber)) * 100) }) // Randomises the pitch of the sound effect
-        if (!character.is("player")) sessionScore++;
-        character.move(0, -200)
-        character.dead = true // Labels the character as dead, this way they can't move or attack
-        if (character.is("player")) {
-            playerControlEvents.keyDown.forEach(keyDownEvent => keyDownEvent.cancel()) // Stops the player from moving
-            playerControlEvents.keyUp.forEach(keyUpEvent => keyUpEvent.cancel()) // Stops the player from moving
-            enemyAIBasic.cancel() // Stops the enemy AI from running
-            gameOver(gameMode)
+
+
+        if (character.attackType === "fightyMan") {
+            character.move(0, -200)
+            tween(
+                character.worldPos(),
+                vec2(character.worldPos().x + (character.flipX ? 50 : -50), character.worldPos().y),
+                0.4,
+                (pos) => character.pos = pos,
+                easings.easeOutCubic
+            )
+            character.dead = true // Labels the character as dead, this way they can't move or attack
+            fightyManDead = true
+            character.play("fireShield")
+            play(`enemyDeath1`, { detune: (getRandomNumber(1, (8 / 1)) * 100) }) // Randomises the pitch of the sound effect
+            await wait(2)
+            character.play("fireShield")
+            play("flamethrower")
+            await wait(3)
+            character.play("idle")
+            play("fireShort")
+            await wait(2)
+            play("fireShort")
+            character.play("walking")
+            tween(
+                character.pos,
+                vec2((width() + 100), height() / 2),
+                4,
+                (pos) => character.pos = pos,
+                easings.linear)
+            await wait(2)
+            play("fireShort")
+            await wait(2)
+            play("fireShort")
         }
-        else deathCount++;
-        await tween(
-            character.opacity,
-            0,
-            bosses.includes(character.attackType) ? 0.35 : 3,
-            (op) => character.opacity = op,
-            easings.easeInCubic
-        )
-        await wait(0.5, () => character.destroy())
-        if (gameMode === "boss_rush" && bosses.includes(character.attackType)) {
-            character.healthbar.destroy()
+        else {
+            if (character.attackType === "hodson") character.play("idle")
+            if (character.attackType === "djinn") character.play("tpStart")
+            if (character.attackType === "ladro") character.play("downed")
+            if (character.attackType === "grigory") character.play("downed")
+            tween(
+                character.worldPos(),
+                vec2(character.worldPos().x + (character.flipX ? 150 : -150), character.worldPos().y),
+                0.4,
+                (pos) => character.pos = pos,
+                easings.easeOutCubic
+            )
+            deathSoundNumber = getRandomNumber(1, 2)
+            play(`enemyDeath${deathSoundNumber}`, { detune: (getRandomNumber(1, (8 / deathSoundNumber)) * 100) }) // Randomises the pitch of the sound effect
+            if (!character.is("player")) sessionScore++;
+            character.move(0, -200)
+            character.dead = true // Labels the character as dead, this way they can't move or attack
+            if (character.is("player")) {
+                playerControlEvents.keyDown.forEach(keyDownEvent => keyDownEvent.cancel()) // Stops the player from moving
+                playerControlEvents.keyUp.forEach(keyUpEvent => keyUpEvent.cancel()) // Stops the player from moving
+                enemyAIBasic.cancel() // Stops the enemy AI from running
+                gameOver(gameMode)
+            }
+            else deathCount++;
+            await tween(
+                character.opacity,
+                0,
+                bosses.includes(character.attackType) ? 0.35 : 3,
+                (op) => character.opacity = op,
+                easings.easeInCubic
+            )
+            await wait(0.5, () => character.destroy())
+            if (gameMode === "boss_rush" && bosses.includes(character.attackType) || (character.attackType === "djinn" && currentRound === 7)) {
+                character.healthbar.destroy()
+            }
         }
+
+
+
     }
 }
 
@@ -4350,13 +4409,15 @@ scene("stage_four_elevator", async (playerTag) => {
 
 scene("stage_five_a", async (playerTag) => {
     currentRound = 5
+    finalRound = false
+    fightyManDead = false
     let bossSpawned = false
     await levelInit(playerTag, "Stage Five", "stage_five_a", ["stage_five_a_bg"])
 
 
 
     onKeyPress("p", () => {
-        go("stage_five_b", playerTag)
+        go("stage_six", playerTag)
     })
 
 
@@ -4417,17 +4478,23 @@ scene("stage_five_a", async (playerTag) => {
     })
 
     const roundEnd = onUpdate(async () => {
-        if (!get("enemy").length && bossSpawned === true) {
+        if (fightyManDead && bossSpawned === true) {
             roundEnd.cancel()
+            stopMusic(currentSong)
+            play("FinalBossOutro")
+            await wait(15)
             await levelComplete()
-            go("good_ending", playerTag)
+            if(gamemode === "main") go("stage_six", playerTag)
+            else{
+                go("starting_menu") 
+            }
         }
     })
 })
 
 scene("stage_five_b", async (playerTag) => {
     currentRound = 6
-
+    finalRound = true
     await levelInit(playerTag, "Stage Five", "stage_five_b", ["stage_five_b_bg"])
 
 
@@ -4491,6 +4558,124 @@ scene("stage_five_b", async (playerTag) => {
         }
     })
 })
+
+
+scene("stage_six", async (playerTag) => {
+    finalRound = true
+    let bossSpawned = false
+    let finalBossSpawned = false
+    fightyManDead = false
+    await levelInit(playerTag, "Stage Six", "stage_six", ["stage_six"])
+    currentRound = 7
+    console.log(currentRound)
+
+    onKeyPress("p", () => {
+        go("stage_one", playerTag)
+    })
+
+
+    await spawnWave([
+        { name: "wait", time: 3 },
+        { name: "gary", yPos: 50 },
+        { name: "gary", yPos: 100 },
+        { name: "joseph", yPos: 180 },
+        { name: "wait", time: 7 },
+        { name: "joseph", yPos: 10 },
+        { name: "joseph", yPos: 40 },
+        { name: "joseph", yPos: 90 },
+        { name: "joseph", yPos: 280 },
+        { name: "wait", time: 10 },
+        { name: "david", yPos: 60 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 90 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 60 },
+        { name: "wait", time: 2 },
+        { name: "andrew", yPos: 50 },
+        { name: "gary", yPos: 150 },
+        { name: "gary", yPos: 200 },
+        { name: "wait", time: 7 },
+        { name: "david", yPos: 25 },
+        { name: "gary", yPos: 90 },
+        { name: "david", yPos: 125 },
+        { name: "wait", time: 7 },
+        { name: "david", yPos: 90 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 60 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 90 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 60 },
+        { name: "wait", time: 2 },
+        { name: "david", yPos: 90 },
+        { name: "joseph", yPos: 60 },
+        { name: "joseph", yPos: 90 },
+        { name: "joseph", yPos: 120 },
+        { name: "david", yPos: 75 },
+        { name: "david", yPos: 150 },
+        { name: "david", yPos: 275 },
+
+
+    ], 5); // Spawns are capped at 5 at a time
+
+
+    const spawnBoss = onUpdate(async () => {
+        if (!get("enemy").length) {
+            spawnBoss.cancel()
+            await spawnWave([
+                { name: "fadeout" },
+                { name: "wait", time: 2 },
+                { name: "djinn", yPos: 90 },
+            ], 2)
+            bossSpawned = true
+        }
+    })
+
+
+    const spawnFinalBoss = onUpdate(async () => {
+        if (!get("enemy").length && bossSpawned === true) {
+            spawnFinalBoss.cancel()
+            await spawnWave([
+                { name: "fadeout" },
+                { name: "wait", time: 2 },
+                { name: "fightyMan", yPos: 90 },
+            ], 2)
+            finalBossSpawned = true
+        }
+    })
+    console.log(currentRound)
+
+    const roundEnd = onUpdate(async () => {
+        if (fightyManDead && finalBossSpawned === true) {
+            roundEnd.cancel()
+            stopMusic(currentSong)
+            play("FinalBossOutro")
+            await wait(15)
+            await levelComplete()
+            go("good_ending", playerTag)
+        }
+    })
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 scene("boss_rush", async (playerTag) => {
     current_round = 6
     stage_background = "stage_five_a_bg"
@@ -4982,7 +5167,7 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
     ])
 
     let versionText = add([
-        text("v0.62.24 @LewisOlley", { align: "center", size: 16 }),
+        text("v0.63.0 @LewisOlley", { align: "center", size: 16 }),
         color(255, 255, 255),
         pos(170, 940),
         anchor("center"),
