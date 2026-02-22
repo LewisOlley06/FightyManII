@@ -1232,7 +1232,7 @@ async function enableEnemyAI() {
                     }
                     enemy.play("summon")
                     await wait(1)
-                    if (horizontalDirection === "left") {
+                    if (horizontalDirection === "left" || finalRound === true) {
                         play("fireLong")
                         spawnProjectile({
                             spriteName: "firebar",
@@ -1257,8 +1257,8 @@ async function enableEnemyAI() {
                             }
                         }, vec2(2000, getRandomNumber(500, 900)), "right", 10, false, true)
                     }
-
-                    else {
+                   if (finalRound === true) await wait(0.8)
+                    if (horizontalDirection === "right" || finalRound === true) {
                         play("fireLong")
                         spawnProjectile({
                             spriteName: "firebar",
