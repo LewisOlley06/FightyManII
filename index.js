@@ -3199,7 +3199,8 @@ function registerPlayerControls(player) {
             player.speedCooldown = false
         }
         else {
-            player.defense = 0.9
+            if(isKeyDown("z") || isKeyDown("x")) return
+            player.defense = 0.95
             performAttack(player, "block")
         }
     }))
