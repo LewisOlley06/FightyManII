@@ -4485,7 +4485,7 @@ scene("stage_five_a", async (playerTag) => {
             play("FinalBossOutro")
             await wait(15)
             await levelComplete()
-            if (gameMode = "main") go("stage_six", playerTag)
+            if (gameMode === "main") go("stage_six", playerTag)
             else {
                 go("starting_menu")
             }
