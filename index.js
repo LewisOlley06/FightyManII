@@ -3010,6 +3010,7 @@ async function spawnWave(enemyQueue, entityCap) {
             await wait(0.1) // Wait for 0.5 seconds
             continue; // Skip to the next iteration of the loop
         }
+        if (game_over) return
         const item = enemyQueue.shift() // Removes the first item from the array
         if (item.name === "joseph") {
             spawnJoseph(item.yPos);
