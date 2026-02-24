@@ -1895,7 +1895,7 @@ async function enableEnemyAI() {
                         fireballTimer += dt(); // Increment fireball timer by delta time
 
                         // Check if it's time to fire a fireball
-                        if (fireballTimer >= 2 / (healthDifficultyMultiplier * healthDifficultyMultiplier) / (difficultyMultiplier*difficultymultiplier)) {
+                        if (fireballTimer >= 2 / (healthDifficultyMultiplier * healthDifficultyMultiplier) / (difficultyMultiplier*difficultyMultiplier)) {
                             fireballTimer = 0; // Reset fireball timer
 
                             // Spawn fireball projectile
