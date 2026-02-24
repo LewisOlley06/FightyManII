@@ -2807,8 +2807,8 @@ function getEnemyAttributes(entityName, currentRound, difficulty) {
         }
     } else if (entityName === "venus") {
         enemyAttributes = {
-            health: 150 * difficultyMultiplier,
-            healthbar: 150 * difficultyMultiplier,
+            health: 125 * difficultyMultiplier,
+            healthbar: 125* difficultyMultiplier,
             aggression: 60 * difficultyMultiplier,
             speed: 7 * difficultyMultiplier,
             weight: 2,
@@ -2874,7 +2874,7 @@ async function spawnVenus(zSpawn) {
         healthbar: new Healthbar({
             text: "Venus",
             icon: "venusIcon",
-            maxHealth: 150 * difficultyMultiplier,
+            maxHealth: 125 * difficultyMultiplier,
             position: vec2(1300, -100),
             color: rgb(255, 0, 0),
             flip: true
@@ -5167,7 +5167,7 @@ scene("starting_menu", () => { // Opens up a new scene for the starting menu
     ])
 
     let versionText = add([
-        text("v0.71.12 @LewisOlley", { align: "center", size: 16 }),
+        text("v0.71.13 @LewisOlley", { align: "center", size: 16 }),
         color(255, 255, 255),
         pos(170, 940),
         anchor("center"),
