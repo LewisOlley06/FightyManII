@@ -2022,9 +2022,7 @@ async function gameOver(gameMode) {
         clearInterval(oldManSpawn)
         try {
             funRoom.cancel()
-        } catch (error) {
-            pass
-        }
+        } catch (error) {}
     }
     await toggleDarkOverlay(false)
     await Promise.all([ // Wait for both texts to finish animating
