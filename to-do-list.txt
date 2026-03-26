@@ -29,9 +29,10 @@ Enemy Designs
 Enemy Healthbars
 Enemy Hit Notifier
 Stage Designs
-Boss Designs (Very Fast Side Switching Boss)
-Final Boss AI
 Health Pickups
 Extra Characters
 Pause Menu
+Restart Stage?
+Fix Firebar hitboxes
+Gamepad support
 
