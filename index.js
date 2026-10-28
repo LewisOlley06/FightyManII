@@ -8,7 +8,7 @@ kaboom({ // Initiates kaboom instance
     stretch: true, // Stretches the game to fit the screen
     debug: true // Disables debug mode (Kaboom.js by default allows the player to hit function keys to show game information)
 })
-console.log("VERSION UPDATED")
+console.log("VERSION UPDATED 2")
 loadFont("arcade", "/fonts/arcade.ttf") // Loads the font used throughout the game
 //loading sounds
 loadSound("game_over", "/sounds/game_over.mp3")
@@ -32,7 +32,7 @@ loadSound("stage_one", "/sounds/Stage1.mp3")
 loadSound("stage_two", "/sounds/Stage2.mp3")
 loadSound("stage_three", "/sounds/Stage3.mp3")
 loadSound("stage_four", "/sounds/Stage4-1.mp3")
-loadSound("stage_four_elevator", "/sounds/Stage 4 v0.1.wav")
+loadSound("stage_four_elevator", "/sounds/Stage 4 - v0.1.wav")
 loadSound("Boss", "/sounds/Boss.mp3")
 loadSound("stage_five_a", "/sounds/Stage5a.mp3")
 loadSound("stage_five_b", "/sounds/Stage5b.mp3")
