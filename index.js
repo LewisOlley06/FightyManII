@@ -4702,7 +4702,7 @@ scene("boss_rush", async (playerTag) => {
         { name: "venus", yPos: 90 },
         { name: "fadeout" },
         { name: "wait", time: 1 },
-        { name: "fightyMan", yPos: 90 
+        { name: "fightyMan", yPos: 90},
         { name: "fadeout" },
         { name: "wait", time: 1 },
         { name: "djinn", yPos: 90 },
