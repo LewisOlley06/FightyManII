@@ -507,6 +507,7 @@ let playerControlEvents = {
     keyUp: [], // Stores the keyUp events for the player
 }
 
+let fightyManPhase2 = false
 let game_over = false
 let stageFourBackgroundEntity = null // Stores the object of the moving background in Stage 4
 let bgMoving = false // Stores the boolean value of whether the background is moving in Stage 2
@@ -1059,11 +1060,8 @@ async function enableEnemyAI() {
                     enemy.attackCooldown = false
                 }
                 if (fightyManAttack === 3) { // Initiates the fireballs attack
-                    if (!finalRound) {
-                        fightyManAttack = 5
-                        console.log(finalRound)
-                    }
-                    else {
+                    
+                    if (finalRound || (fightyManPhase2 === true && gameMode === "boss_rush")) {
                         if (enemy.dead) return
                         enemy.attackCooldown = true
                         await wait(0.5 / difficultyMultiplier / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
@@ -1158,6 +1156,11 @@ async function enableEnemyAI() {
 
                         enemy.attackCooldown = false
                     }
+                        }
+                    }
+                   
+                    else {
+                      fightyManAttack = 5  
                 }
                 if (fightyManAttack === 4) { // Initiates the fireshield attack
                     if (enemy.dead) return
@@ -1256,7 +1259,7 @@ async function enableEnemyAI() {
                             }
                         }, vec2(2000, getRandomNumber(500, 900)), "right", 10, false, true)
                     }
-                    if (finalRound === true) await wait(0.8)
+                    if (finalRound === true || (fightyManPhase2 === true && gameMode === "boss_rush")) await wait(0.8)
                     if (horizontalDirection === "right" || finalRound === true) {
                         play("fireLong")
                         spawnProjectile({
@@ -2423,6 +2426,7 @@ async function checkDeath(character, attackHitbox) {
             )
             character.dead = true // Labels the character as dead, this way they can't move or attack
             fightyManDead = true
+            fightyManPhase2 = true
             character.play("fireShield")
             play(`enemyDeath1`, { detune: (getRandomNumber(1, (8 / 1)) * 100) }) // Randomises the pitch of the sound effect
             await wait(2)
@@ -4676,6 +4680,7 @@ scene("stage_six", async (playerTag) => {
 
 scene("boss_rush", async (playerTag) => {
     current_round = 6
+    fightyManPhase2 = false
     stage_background = "stage_five_a_bg"
     difficultyMultiplier = ((currentRound + (4 + difficulty * 2)) / 10)
 
@@ -4693,6 +4698,9 @@ scene("boss_rush", async (playerTag) => {
         { name: "fadeout" },
         { name: "wait", time: 1 },
         { name: "venus", yPos: 90 },
+        { name: "fadeout" },
+        { name: "wait", time: 1 },
+        { name: "fightyMan", yPos: 90 
         { name: "fadeout" },
         { name: "wait", time: 1 },
         { name: "djinn", yPos: 90 },
