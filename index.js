@@ -911,7 +911,7 @@ async function enableEnemyAI() {
                         hitboxScale: 0.5,
                         health: 999,
                         attributes: {
-                            strength: 5 * healthDifficultyMultiplier,
+                            strength: 3 * healthDifficultyMultiplier,
                             attackType: "fireball",
                         }
                     }, enemyPos, horizontalDirection, 1, false, true)
@@ -923,7 +923,7 @@ async function enableEnemyAI() {
                         hitboxScale: 0.5,
                         health: 999,
                         attributes: {
-                            strength: 5 * healthDifficultyMultiplier,
+                            strength: 3 * healthDifficultyMultiplier,
                             attackType: "fireball",
                         }
                     }, enemyPos, fireballDown, 1, false, true)
@@ -935,7 +935,7 @@ async function enableEnemyAI() {
                         hitboxScale: 0.5,
                         health: 999,
                         attributes: {
-                            strength: 5 * healthDifficultyMultiplier,
+                            strength: 3 * healthDifficultyMultiplier,
                             attackType: "fireball",
                         }
                     }, enemyPos, "down", 1, false, true)
@@ -1024,6 +1024,8 @@ async function enableEnemyAI() {
                 if (enemy.dead) return
                 enemy.collisionIgnore.push("enemy")
 
+                if((finalRound || (fightyManPhase2 === true && gameMode === "boss_rush")) && (enemy.hp() < (maxHealth * 0.6))) healthDifficultyMultiplier = healthDifficultyMultiplier* 1.5
+
 
                 if (fightyManAttack === 1) { // Initiates the walking right animation
                     enemy.attackCooldown = true
@@ -1092,7 +1094,7 @@ async function enableEnemyAI() {
                             hitboxScale: 0.5,
                             health: 999,
                             attributes: {
-                                strength: 5 * healthDifficultyMultiplier,
+                                strength: 2 * healthDifficultyMultiplier,
                                 attackType: "fireball",
                             }
                         }, enemyPos, horizontalDirection, 3, false, true)
@@ -1104,7 +1106,7 @@ async function enableEnemyAI() {
                             hitboxScale: 0.5,
                             health: 999,
                             attributes: {
-                                strength: 5 * healthDifficultyMultiplier,
+                                strength: 2 * healthDifficultyMultiplier,
                                 attackType: "fireball",
                             }
                         }, enemyPos, fireballDown, 3, false, true)
@@ -1116,7 +1118,7 @@ async function enableEnemyAI() {
                             hitboxScale: 0.5,
                             health: 999,
                             attributes: {
-                                strength: 5 * healthDifficultyMultiplier,
+                                strength: 2 * healthDifficultyMultiplier,
                                 attackType: "fireball",
                             }
                         }, enemyPos, "down", 3, false, true)
@@ -1128,7 +1130,7 @@ async function enableEnemyAI() {
                             hitboxScale: 0.5,
                             health: 999,
                             attributes: {
-                                strength: 5 * healthDifficultyMultiplier,
+                                strength: 2 * healthDifficultyMultiplier,
                                 attackType: "fireball",
                             }
                         }, enemyPos, fireballDown, 3, false, true)
@@ -1140,7 +1142,7 @@ async function enableEnemyAI() {
                             hitboxScale: 0.5,
                             health: 999,
                             attributes: {
-                                strength: 5 * healthDifficultyMultiplier,
+                                strength: 2 * healthDifficultyMultiplier,
                                 attackType: "fireball",
                             }
                         }, enemyPos, horizontalDirection, 3, false, true)
@@ -1156,9 +1158,6 @@ async function enableEnemyAI() {
 
                         enemy.attackCooldown = false
                     }
-                        }
-                    }
-                   
                     else {
                       fightyManAttack = 5  
                 }
@@ -1234,7 +1233,7 @@ async function enableEnemyAI() {
                     }
                     enemy.play("summon")
                     await wait(1)
-                    if (horizontalDirection === "left" || finalRound === true) {
+                    if (horizontalDirection === "left" || finalRound === true || (fightyManPhase2 === true && gameMode === "boss_rush")) {
                         play("fireLong")
                         spawnProjectile({
                             spriteName: "firebar",
@@ -1289,7 +1288,7 @@ async function enableEnemyAI() {
                     if (getRandomNumber(1, 4) !== 4) fightyManAttack = getRandomNumber(3, 5)
                 }
                 enemy.attackCooldown = false
-            }
+        }
             if (enemy.attackType === "hodson") { //If the enemy is the final boss, initiate Final Boss AI.
                 console.log(enemy.hp())
                 healthDifficultyMultiplier = 1 + (enemy.healthbar.maxHealth - enemy.hp()) / enemy.healthbar.maxHealth;
@@ -1980,7 +1979,9 @@ async function startFinalBossMusic() {
     currentSong = play("FinalBossLoop1", { loop: true, volume: globalVolume });
 
     // Continuously check FightyMan's HP and switch to FinalBossLoop2 when HP <= 50%
+    if(finalRound || (fightyManPhase2 === true && gameMode === "boss_rush")) {
     checkFightyManHP();
+    }
 }
 
 async function switchToLoop2() {
@@ -2008,7 +2009,7 @@ async function checkFightyManHP() {
         if (enemy.attackType === "fightyMan") fightyMan = enemy
     })
 
-    while (fightyMan.hp() > maxHealth * 0.5) {
+    while (fightyMan.hp() > maxHealth * 0.6) {
         await wait(0.1); // Check every 100 milliseconds
     }
     // Once FightyMan's HP is <= 50%, switch the music
