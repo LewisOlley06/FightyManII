@@ -526,7 +526,6 @@ let difficulty = 2 // Default difficulty is normal (2)
 let gameMode = null // Stores the current game mode (either "main", "infinity" or "stage_select")
 let currentRound = 1
 let finalRound = false
-let enemyAIBasic = null // Stores the enemy AI in memory when enabled
 let oldManSpawn = null
 let currentSong = play("menu_theme", { loop: true, volume: 0.0 }) // Loops the menu theme while the player is in the menu
 const funRoom = null
