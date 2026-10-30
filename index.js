@@ -760,7 +760,25 @@ async function lightningAttack(location) {
 
 }
 
+let enemyAIBasic = null;
+
+function disableEnemyAI() {
+    if (enemyAIBasic) {
+        enemyAIBasic.cancel();
+        enemyAIBasic = null;
+    }
+}
+
+async function restartEnemyAI() {
+    disableEnemyAI();
+    await wait(0.05);
+    enableEnemyAI();
+}
+
 async function enableEnemyAI() {
+    // Prevent multiple AI loops
+    disableEnemyAI();
+
     enemyAIBasic = onUpdate(() => {
         // Gets all entities with the "enemy" tag
         let enemies = get("enemy");
@@ -784,10 +802,13 @@ async function enableEnemyAI() {
             if (horizontalDirection === "left" && (enemy.attackType !== "venus")) enemy.flipX = (enemy.attackType === "ladro") ? true : false
             if (horizontalDirection === "right" && (enemy.attackType !== "venus")) enemy.flipX = (enemy.attackType === "ladro") ? false : true
 
-            enemy.onUpdate(() => {
-                const y = enemy.pos.y
-                enemy.z = (y - 460) / 10
-            })
+            if (!enemy.zUpdaterAdded) {
+    enemy.zUpdaterAdded = true;
+
+    enemy.onUpdate(() => {
+        enemy.z = (enemy.pos.y - 460) / 10;
+    });
+}
 
 
 
@@ -2417,7 +2438,7 @@ async function checkDeath(character, attackHitbox) {
 
 
         if (character.attackType === "fightyMan") {
-            enemyAIBasic.cancel()
+            disableEnemyAI();
             character.move(0, -200)
             tween(
                 character.worldPos(),
@@ -2453,7 +2474,7 @@ async function checkDeath(character, attackHitbox) {
             await wait(0.5, () => character.destroy())
             if (gameMode === "boss_rush" && bosses.includes(character.attackType) || (character.attackType === "djinn" && currentRound === 6)) {
                 character.healthbar.destroy()
-                enemyAIBasic()
+                restartEnemyAI();
             }
             
         }
@@ -2477,7 +2498,7 @@ async function checkDeath(character, attackHitbox) {
             if (character.is("player")) {
                 playerControlEvents.keyDown.forEach(keyDownEvent => keyDownEvent.cancel()) // Stops the player from moving
                 playerControlEvents.keyUp.forEach(keyUpEvent => keyUpEvent.cancel()) // Stops the player from moving
-                enemyAIBasic.cancel() // Stops the enemy AI from running
+                disableEnemyAI(); // Stops the enemy AI from running
                 gameOver(gameMode)
             }
             else deathCount++;
@@ -3246,7 +3267,7 @@ function registerPlayerControls(player) {
 async function levelInit(playerTag, introText, songName, backgrounds) { // Function that runs the common code for all levels
     destroyAll(obj => !obj.is("bg"));
     difficultyMultiplier = ((currentRound + (4 + difficulty * 2)) / 10)
-    if (enemyAIBasic !== null) enemyAIBasic.cancel() // Stops the enemy AI from running
+    if (enemyAIBasic !== null) disableEnemyAI(); // Stops the enemy AI from running
     enableEnemyAI() // Enables enemy AI (movement, attacking, etc.)
     setCursor("default") // Sets the cursor to the default cursor
     if (songName !== "None") {
@@ -4323,7 +4344,7 @@ scene("stage_four_elevator", async (playerTag) => {
                 weightSign.play("6")
                 playerControlEvents.keyDown.forEach(keyDownEvent => keyDownEvent.cancel()) // Stops the player from moving
                 playerControlEvents.keyUp.forEach(keyUpEvent => keyUpEvent.cancel()) // Stops the player from moving
-                enemyAIBasic.cancel() // Stops the enemy AI from running
+                disableEnemyAI(); // Stops the enemy AI from running
                 await wait(0.5)
                 fallingEntities = get("enemy")
                 fallingEntities.push(get("player")[0], stageFourBackgroundEntity, weightSign)
