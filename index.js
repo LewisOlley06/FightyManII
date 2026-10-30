@@ -1161,6 +1161,7 @@ async function enableEnemyAI() {
                     else {
                       fightyManAttack = 5  
                 }
+                }
                 if (fightyManAttack === 4) { // Initiates the fireshield attack
                     if (enemy.dead) return
                     enemy.attackCooldown = true
