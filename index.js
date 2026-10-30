@@ -2453,7 +2453,9 @@ async function checkDeath(character, attackHitbox) {
             await wait(0.5, () => character.destroy())
             if (gameMode === "boss_rush" && bosses.includes(character.attackType) || (character.attackType === "djinn" && currentRound === 6)) {
                 character.healthbar.destroy()
+                enemyAIBasic()
             }
+            
         }
         else {
             if (character.attackType === "hodson") character.play("idle")
