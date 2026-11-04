@@ -2986,7 +2986,7 @@ async function spawnDavid(zSpawn) {
     david.play("idle")
 }
 async function spawnFightyMan(zSpawn) {
-    let maxHealth = 500
+    let maxHealth = (isInsane() ? 200:500)
     const fightyMan = spawnEntity({
         spriteName: "fightyMan",
         scaleAmount: 7.5,
@@ -3006,7 +3006,7 @@ async function spawnFightyMan(zSpawn) {
     fightyMan.play("idle")
 }
 async function spawnLadro(zSpawn) {
-    let maxHealth = 120 * difficultyMultiplier
+    let maxHealth = (isInsane() ? 60:120)* difficultyMultiplier
     const ladro = spawnEntity({
         spriteName: "ladro",
         scaleAmount: 7.5,
@@ -3026,7 +3026,7 @@ async function spawnLadro(zSpawn) {
     ladro.play("idle")
 }
 async function spawnDjinn(zSpawn) {
-    let maxHealth = 300 * difficultyMultiplier
+    let maxHealth = (isInsane() ? 130:300)* difficultyMultiplier
     const djinn = spawnEntity({
         spriteName: "djinn",
         scaleAmount: 10,
@@ -3046,7 +3046,7 @@ async function spawnDjinn(zSpawn) {
     djinn.play("idle")
 }
 async function spawnHodson(zSpawn) {
-    let maxHealth = 80 * difficultyMultiplier
+    let maxHealth = (isInsane() ? 40:80)* difficultyMultiplier
     const hodson = spawnEntity({
         spriteName: "hodson",
         scaleAmount: 6.5,
@@ -3568,7 +3568,7 @@ const LANE_H = 110             // lane band height (= lane spacing)
 const PHW = 40, PHH = 50       // half-size of the player's hurtbox for boss attacks
 const STRIP_HW = 60            // half-width of a lightning strip
 const LADRO_Y = 240            // Ladro's hover height
-const DMG = { bolt: 14, heavy: 22, strike: 30, melee: 38 }
+const DMG = { bolt: 10, heavy: 18, strike: 20, melee: 30 }
 const BOSS_DONE = Symbol("boss_done")
 
 // ---- state helpers ----
