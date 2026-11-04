@@ -5752,7 +5752,7 @@ scene("boss_rush", async (playerTag) => {
 
 
 
-)
+
 scene("character_select", () => { // Opens up a new scene for the character select
     stopMusic(currentSong) // Stops the menu theme
     setCursor("default")
