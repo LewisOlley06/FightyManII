@@ -5705,30 +5705,40 @@ scene("boss_rush", async (playerTag) => {
     stage_background = "stage_five_a_bg"
     difficultyMultiplier = ((currentRound + (4 + difficulty * 2)) / 10)
 
-    await levelInit(playerTag, `Boss-Rush: ${difficultyNames[difficulty]}`, "None", [stage_background])
-    await spawnWave([
-        { name: "fadeout" },
-        { name: "wait", time: 1 },
-        { name: "ladro", yPos: 90 },
-        { name: "fadeout" },
-        { name: "wait", time: 1 },
-        { name: "grigory", yPos: 90 },
-        { name: "fadeout" },
-        { name: "wait", time: 1 },
-        { name: "hodson", yPos: 90 },
-        { name: "fadeout" },
-        { name: "wait", time: 1 },
-        { name: "venus", yPos: 90 },
-        { name: "fadeout" },
-        { name: "wait", time: 1 },
-        { name: "fightyMan", yPos: 90 },
-        { name: "fadeout" },
-        { name: "wait", time: 1 },
-        { name: "djinn", yPos: 90 },
-        { name: "fadeout" },
-        { name: "wait", time: 1 },
-        { name: "fightyMan", yPos: 90 },
-    ], 1); // Spawns are capped at 1 at a time
+    await levelInit(
+        playerTag,
+        `Boss-Rush: ${difficultyNames[difficulty]}`,
+        "None",
+        [stage_background]
+    )
+
+    const bosses = [
+        "ladro",
+        "grigory",
+        "hodson",
+        "venus",
+        "fightyMan",
+        "djinn",
+        "fightyMan"
+    ]
+
+    // Fisher-Yates shuffle
+    for (let i = bosses.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[bosses[i], bosses[j]] = [bosses[j], bosses[i]]
+    }
+
+    const wave = []
+
+    for (const boss of bosses) {
+        wave.push(
+            { name: "fadeout" },
+            { name: "wait", time: 1 },
+            { name: boss, yPos: 90 }
+        )
+    }
+
+    await spawnWave(wave, 1)
 
     const roundEnd = onUpdate(async () => {
         if (!get("enemy").length) {
@@ -5737,7 +5747,7 @@ scene("boss_rush", async (playerTag) => {
             go("good_ending", playerTag)
         }
     })
-}
+})
 
 
 
