@@ -664,6 +664,11 @@ class Healthbar {
         );
     }
 
+    reset() {
+        // Restores the bar to full, even if health has gone negative
+        this.heal(this.maxHealth - this.health)
+    }
+
     destroy() {
         if (this.flip) {
             // Destroy the healthbar outline
@@ -783,7 +788,7 @@ async function enableEnemyAI() {
         let enemies = get("enemy");
         let bosses = ["ladro", "grigory", "fightyMan", "venus", "hodson", "djinn"]
         enemies.forEach(async enemy => {
-            if (enemy.dead) return // Stops the function if the enemy is dead
+            if (enemy.dead || enemy.knockedDown) return // Stops the function if the enemy is dead
             // Get the player's position
             const player = get("player")[0] // Gets the first entity with the player tag
             if (!player) {
@@ -802,12 +807,12 @@ async function enableEnemyAI() {
             if (horizontalDirection === "right" && (enemy.attackType !== "venus")) enemy.flipX = (enemy.attackType === "ladro") ? false : true
 
             if (!enemy.zUpdaterAdded) {
-    enemy.zUpdaterAdded = true;
+                enemy.zUpdaterAdded = true;
 
-    enemy.onUpdate(() => {
-        enemy.z = (enemy.pos.y - 460) / 10;
-    });
-}
+                enemy.onUpdate(() => {
+                    enemy.z = (enemy.pos.y - 460) / 10;
+                });
+            }
 
 
 
@@ -817,7 +822,7 @@ async function enableEnemyAI() {
 
                 if (enemy.curAnim() === "cross") return // Checks to see if the attacking enemy is currently attacking, or dead.
                 if (enemy.curAnim() === "jab") return
-                if (enemy.dead) return
+                if (enemy.dead || enemy.knockedDown) return
 
                 if (attackChance === 1 && enemy.attackType === "jab") { // If the random attack chance hits, the enemy performs their attack.
 
@@ -856,12 +861,18 @@ async function enableEnemyAI() {
             }
 
 
-            if (enemy.attackType === "djinn") { //If the enemy is the final boss, initiate Final Boss AI.
+            // INSANE: every boss uses the Infernum-style AI from game_additions.js
+            if (isInsane() && BOSS_TYPES.includes(enemy.attackType)) {
+                startInfernumAI(enemy)
+                return
+            }
+
+            if (enemy.attackType === "djinn") { //If the enemy is the final boss, initiate Final Boss AI. //If the enemy is the final boss, initiate Final Boss AI.
                 let maxHealth = enemy.healthbar.maxHealth
                 healthDifficultyMultiplier = 1 + (enemy.healthbar.maxHealth - enemy.hp()) / enemy.healthbar.maxHealth;
                 if (enemy.attackCooldown === true) return
-                if (enemy.dead) return
-                enemy.collisionIgnore.push("enemy")
+                if (enemy.dead || enemy.knockedDown) return
+                ignoreEnemyCollisions(enemy)
 
 
                 if (djinnAttack === 1) { // Initiates the random float movement
@@ -1041,15 +1052,15 @@ async function enableEnemyAI() {
                 let maxHealth = enemy.healthbar.maxHealth
                 healthDifficultyMultiplier = 1 + (enemy.healthbar.maxHealth - enemy.hp()) / enemy.healthbar.maxHealth;
                 if (enemy.attackCooldown === true) return
-                if (enemy.dead) return
-                enemy.collisionIgnore.push("enemy")
+                if (enemy.dead || enemy.knockedDown) return
+                ignoreEnemyCollisions(enemy)
 
-                if((finalRound || (fightyManPhase2 === true && gameMode === "boss_rush")) && (enemy.hp() < (maxHealth * 0.6))) healthDifficultyMultiplier = healthDifficultyMultiplier* 1.5
+                if ((finalRound || (fightyManPhase2 === true && gameMode === "boss_rush")) && (enemy.hp() < (maxHealth * 0.6))) healthDifficultyMultiplier = healthDifficultyMultiplier * 1.5
 
 
                 if (fightyManAttack === 1) { // Initiates the walking right animation
                     enemy.attackCooldown = true
-                    if (enemy.dead) return
+                    if (enemy.dead || enemy.knockedDown) return
                     if (enemy.curAnim() !== "walking") enemy.play("walking")
                     await tween(
                         enemy.worldPos(),
@@ -1066,7 +1077,7 @@ async function enableEnemyAI() {
                 }
 
                 if (fightyManAttack === 2) { // Initiates the walking left animation
-                    if (enemy.dead) return
+                    if (enemy.dead || enemy.knockedDown) return
                     enemy.attackCooldown = true
                     if (enemy.curAnim() !== "walking") enemy.play("walking")
                     await tween(
@@ -1082,9 +1093,9 @@ async function enableEnemyAI() {
                     enemy.attackCooldown = false
                 }
                 if (fightyManAttack === 3) { // Initiates the fireballs attack
-                    
+
                     if (finalRound || (fightyManPhase2 === true && gameMode === "boss_rush")) {
-                        if (enemy.dead) return
+                        if (enemy.dead || enemy.knockedDown) return
                         enemy.attackCooldown = true
                         await wait(0.5 / difficultyMultiplier / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
 
@@ -1106,7 +1117,7 @@ async function enableEnemyAI() {
                             fireballDown = "southWest"
                         }
                         enemy.play("fireProj")
-                        if (enemy.dead) return
+                        if (enemy.dead || enemy.knockedDown) return
                         play("fireShort")
                         spawnProjectile({
                             spriteName: "fireProj",
@@ -1118,7 +1129,7 @@ async function enableEnemyAI() {
                                 attackType: "fireball",
                             }
                         }, enemyPos, horizontalDirection, 3, false, true)
-                        if (enemy.dead) return
+                        if (enemy.dead || enemy.knockedDown) return
                         await wait(0.1)
                         spawnProjectile({
                             spriteName: "fireProj",
@@ -1131,7 +1142,7 @@ async function enableEnemyAI() {
                             }
                         }, enemyPos, fireballDown, 3, false, true)
                         await wait(0.1)
-                        if (enemy.dead) return
+                        if (enemy.dead || enemy.knockedDown) return
                         spawnProjectile({
                             spriteName: "fireProj",
                             scaleAmount: 5,
@@ -1143,7 +1154,7 @@ async function enableEnemyAI() {
                             }
                         }, enemyPos, "down", 3, false, true)
                         await wait(0.1)
-                        if (enemy.dead) return
+                        if (enemy.dead || enemy.knockedDown) return
                         spawnProjectile({
                             spriteName: "fireProj",
                             scaleAmount: 5,
@@ -1155,7 +1166,7 @@ async function enableEnemyAI() {
                             }
                         }, enemyPos, fireballDown, 3, false, true)
                         await wait(0.1)
-                        if (enemy.dead) return
+                        if (enemy.dead || enemy.knockedDown) return
                         spawnProjectile({
                             spriteName: "fireProj",
                             scaleAmount: 5,
@@ -1179,11 +1190,11 @@ async function enableEnemyAI() {
                         enemy.attackCooldown = false
                     }
                     else {
-                      fightyManAttack = 5  
-                }
+                        fightyManAttack = 5
+                    }
                 }
                 if (fightyManAttack === 4) { // Initiates the fireshield attack
-                    if (enemy.dead) return
+                    if (enemy.dead || enemy.knockedDown) return
                     enemy.attackCooldown = true
                     play("flamethrower")
                     await performAttack(enemy, "fireShield")
@@ -1208,7 +1219,7 @@ async function enableEnemyAI() {
                     enemy.attackCooldown = false
                 }
                 if (fightyManAttack === 5) { // Initiates the firePunch attack
-                    if (enemy.dead) return
+                    if (enemy.dead || enemy.knockedDown) return
                     enemy.attackCooldown = true
                     if (enemy.curAnim() !== "walking") enemy.play("walking")
                     const playerPos = player.worldPos() // Gets the player's position
@@ -1217,7 +1228,7 @@ async function enableEnemyAI() {
                     if (enemyPos.x >= playerPos.x) horizontalDirection = "right"; // Checks whether the entity is to the right of the player
 
                     play("fireShort")
-                    if (enemy.dead) return
+                    if (enemy.dead || enemy.knockedDown) return
                     await tween(
                         enemy.worldPos(),
                         (horizontalDirection === "left") ? vec2(player.worldPos().x - 100, player.worldPos().y) : vec2(player.worldPos().x + 100, player.worldPos().y),
@@ -1233,7 +1244,7 @@ async function enableEnemyAI() {
                 }
                 if (fightyManAttack === 6) { // Initiates the firewalls attack
                     enemy.attackCooldown = true
-                    if (enemy.dead) return
+                    if (enemy.dead || enemy.knockedDown) return
                     await wait(0.5 / difficultyMultiplier / healthDifficultyMultiplier / (enemy.hp() > maxHealth * 0.5 ? 2 : 1))
 
                     const playerPos = player.worldPos() // Gets the player's position
@@ -1309,12 +1320,12 @@ async function enableEnemyAI() {
                     if (getRandomNumber(1, 4) !== 4) fightyManAttack = getRandomNumber(3, 5)
                 }
                 enemy.attackCooldown = false
-        }
+            }
             if (enemy.attackType === "hodson") { //If the enemy is the final boss, initiate Final Boss AI.
                 console.log(enemy.hp())
                 healthDifficultyMultiplier = 1 + (enemy.healthbar.maxHealth - enemy.hp()) / enemy.healthbar.maxHealth;
                 if (enemy.attackCooldown === true) return
-                enemy.collisionIgnore.push("enemy")
+                ignoreEnemyCollisions(enemy)
                 if (hodsonAttack === 1) { // Initiates the walking right animation
                     enemy.attackCooldown = true
                     if (enemy.curAnim() !== "walking") enemy.play("walking")
@@ -1447,8 +1458,8 @@ async function enableEnemyAI() {
 
 
             if (enemy.attackType === "grigory") { // Grigory Boss AI
-                enemy.collisionIgnore.push("enemy")
-                if (enemy.dead) return
+                ignoreEnemyCollisions(enemy)
+                if (enemy.dead || enemy.knockedDown) return
                 if (enemy.attackCooldown === true) return
                 grigoryAttack = getRandomNumber(1, 3)
 
@@ -1504,7 +1515,7 @@ async function enableEnemyAI() {
                         shotgunUp = "northWest"
                     }
 
-                    if (enemy.dead) return
+                    if (enemy.dead || enemy.knockedDown) return
 
                     spawnProjectile({
                         spriteName: "bullet",
@@ -1649,7 +1660,7 @@ async function enableEnemyAI() {
                         shotgunUp = "northWest"
                     }
 
-                    if (enemy.dead) return
+                    if (enemy.dead || enemy.knockedDown) return
 
                     spawnProjectile({
                         spriteName: "bullet",
@@ -1771,8 +1782,8 @@ async function enableEnemyAI() {
 
             if (enemy.attackType === "venus") { // AI for the Venus boss
 
-                enemy.collisionIgnore.push("enemy") // Ignore all hitbox collisions for this boss.
-                if (enemy.dead) return
+                ignoreEnemyCollisions(enemy) // Ignore all hitbox collisions for this boss.
+                if (enemy.dead || enemy.knockedDown) return
                 if (enemy.attackCooldown === true) return
                 enemy.play("idle")
 
@@ -1896,7 +1907,7 @@ async function enableEnemyAI() {
             }
             (async function mainLoop() {
                 if (enemy.attackType === "ladro" && !enemy.dead) { // AI for the Ladro boss
-                    enemy.collisionIgnore.push("enemy"); // Ignore all hitbox collisions for this boss.
+                    ignoreEnemyCollisions(enemy); // Ignore all hitbox collisions for this boss.
 
                     if (enemy.attackType === "ladro" && !enemy.spawned) {
                         t = 0;
@@ -1918,7 +1929,7 @@ async function enableEnemyAI() {
                         fireballTimer += dt(); // Increment fireball timer by delta time
 
                         // Check if it's time to fire a fireball
-                        if (fireballTimer >= 2 / (healthDifficultyMultiplier * healthDifficultyMultiplier) / (difficultyMultiplier*difficultyMultiplier)) {
+                        if (fireballTimer >= 2 / (healthDifficultyMultiplier * healthDifficultyMultiplier) / (difficultyMultiplier * difficultyMultiplier)) {
                             fireballTimer = 0; // Reset fireball timer
 
                             // Spawn fireball projectile
@@ -1995,13 +2006,14 @@ async function startFinalBossMusic() {
     // Play the FinalBossIntro
     currentSong = play("FinalBossIntro", { volume: globalVolume });
     await wait(currentSong.duration() - 0.05);
+    if (game_over) return
 
     // Loop FinalBossLoop1
     currentSong = play("FinalBossLoop1", { loop: true, volume: globalVolume });
 
     // Continuously check FightyMan's HP and switch to FinalBossLoop2 when HP <= 50%
-    if(finalRound || (fightyManPhase2 === true && gameMode === "boss_rush")) {
-    checkFightyManHP();
+    if (finalRound || (fightyManPhase2 === true && gameMode === "boss_rush")) {
+        checkFightyManHP();
     }
 }
 
@@ -2024,17 +2036,14 @@ async function switchToLoop2() {
 }
 
 async function checkFightyManHP() {
-    let maxHealth = 400 * difficultyMultiplier
-    enemies = get("enemy")
-    enemies.forEach(enemy => {
-        if (enemy.attackType === "fightyMan") fightyMan = enemy
-    })
-
-    while (fightyMan.hp() > maxHealth * 0.6) {
-        await wait(0.1); // Check every 100 milliseconds
+    const maxHealth = 400 * difficultyMultiplier
+    const fightyMan = get("enemy").find(e => e.attackType === "fightyMan")
+    if (!fightyMan) return
+    while (fightyMan.exists() && !game_over && fightyMan.hp() > maxHealth * 0.6) {
+        await wait(0.1) // Check every 100 milliseconds
     }
-    // Once FightyMan's HP is <= 50%, switch the music
-    await switchToLoop2();
+    if (!fightyMan.exists() || game_over || fightyMan.dead) return
+    await switchToLoop2()
 }
 
 
@@ -2047,7 +2056,7 @@ async function gameOver(gameMode) {
         clearInterval(oldManSpawn)
         try {
             funRoom.cancel()
-        } catch (error) {}
+        } catch (error) { }
     }
     await toggleDarkOverlay(false)
     await Promise.all([ // Wait for both texts to finish animating
@@ -2145,6 +2154,7 @@ async function toggleDarkOverlay(isRoundOne = false, blackout = false) {
                 (op) => topDarkOverlay.opacity = op,
                 easings.easeInCubic
             );
+            topDarkOverlay.destroy()
         }
     } else {
         darkOverlay.opacity = 1;
@@ -2239,7 +2249,7 @@ function addButton(txt, btn_opt, position, callback, opc = 1) {
         if (btn.disabled) {
             btn.color = rgb(75, 75, 75)
             // how some text saying why the button is disabled
-            if (btn.disabledText) {
+            if (btn.disabledText && !get("disabled_text").length) {
                 add([
                     text(`${btn.disabledText}`, { align: "left", lineSpacing: 2.5, size: 22.5, font: "arcade" }),
                     color(225, 0, 50),
@@ -2365,16 +2375,21 @@ async function performAttack(entity, attackName, damageBoxDamage = null, damageB
         entity.play(attackName) // Plays the block animation
     }
 
+    if (entity.knockedDown) { // knocked down mid-attack: cancel it
+        attackHitbox?.destroy()
+        return
+    }
+
     // Check if attack hit anything
     let characters = get("enemy") // Gets all entities with the "enemy" tag
     let playerChars = get("player")
     //let playerChar = playerChars[0]
-    characters.push(get("player")[0]) // Adds the player to the array of characters
+    if (get("player")[0]) characters.push(get("player")[0]) // Adds the player to the array of characters
 
     for (let i = 0; i < characters.length; i++) {
         const character = characters[i]
         if (attackHitbox?.isColliding(character)) {
-            if (character.dead) continue;
+            if (character.dead || character.invulnerable) continue;
 
 
             if (attackName === "jab") {
@@ -2384,6 +2399,7 @@ async function performAttack(entity, attackName, damageBoxDamage = null, damageB
                 else { play(`enemyPunch${character.weight}`) } // Plays a punch sound effect
                 character.hurt(7 * entity.strength * (1 - character.defense))
                 if ((character.healthbar && currentRound !== 7) || (currentRound === 7 && character.is("player"))) character.healthbar.hurt(7 * entity.strength * (1 - character.defense)) // Update the healthbar visual
+                if (entity.is("player") && !character.is("player")) registerJabHit(character, entity)
             }
 
 
@@ -2392,6 +2408,7 @@ async function performAttack(entity, attackName, damageBoxDamage = null, damageB
                 play(`punch${getRandomNumber(3, 4)}`) // Plays a random punch sound effect
                 character.hurt(((entity.attackType === "ladro") ? 20 : 12) * (1 - character.defense)) // Hurts the character by 12 health
                 if (character.healthbar) character.healthbar.hurt(12 * (1 - character.defense)) // Update the healthbar visual
+                if (entity.is("player") && !character.is("player")) knockDownEnemy(character, entity)
             }
             if (attackName === "fireShield") {
                 if (character.dead) continue;
@@ -2413,6 +2430,16 @@ async function performAttack(entity, attackName, damageBoxDamage = null, damageB
 }
 async function checkDeath(character, attackHitbox) {
     if (character.hp() <= 0) { // Checks if the character is dead
+        if (character.dead) return // Already handled (stops repeated hits re-running this)
+        if (character.is("player")) {
+            lives--
+            updateLivesHud()
+            if (lives > 0) { // Lives left: respawn in place instead of game over
+                attackHitbox?.destroy()
+                respawnPlayer(character) // intentionally not awaited
+                return
+            }
+        }
         //remove the dead character from the collision ignore list
         if (character.is("player")) {
             character.defense = 0
@@ -2427,7 +2454,14 @@ async function checkDeath(character, attackHitbox) {
             character.collisionIgnore = character.collisionIgnore.filter(item => item !== "player")
         }
         attackHitbox?.destroy()
-        get("player")[0].collisionIgnore.push(`${character.id}`) // Stops the player from colliding with the enemy
+        if (!character.is("player")) {
+            const pl = get("player")[0]
+            if (pl) {
+                const deadId = `${character.id}`
+                pl.collisionIgnore.push(deadId) // Stops the player from colliding with the enemy
+                character.onDestroy(() => { pl.collisionIgnore = pl.collisionIgnore.filter(t => t !== deadId) })
+            }
+        }
         character.collisionIgnore.push("player") // Stops the player from colliding with the player
         character.collisionIgnore.push("enemy") // Stops the enemy from colliding with the enemy
         // Remove the hitbox after the animation is done
@@ -2475,7 +2509,7 @@ async function checkDeath(character, attackHitbox) {
                 character.healthbar.destroy()
                 restartEnemyAI();
             }
-            
+
         }
         else {
             if (character.attackType === "hodson") character.play("idle")
@@ -2602,10 +2636,10 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
         projectile.flipX = true
     }
     if (projectile.attackType === "firebar") projectile.play("idle")
-    projectileDamage = onUpdate(() => {
+    const projectileDamage = projectile.onUpdate(() => {
         player = get("player")[0]
         if (!player) return
-        if (projectile.isColliding(player) && damagesEnemies === false) {
+        if (projectile.isColliding(player) && damagesEnemies === false && !player.invulnerable && !player.dead) {
             if (!projectile.hit) { // Check if the hit property is false
                 projectile.hit = true // Set the hit property to true
                 if (lightningType === true) return
@@ -2617,7 +2651,9 @@ async function spawnProjectile(options, spawnPos, direction, velocity, shotgun =
                 player.healthbar.hurt(5 * projectile.strength)
                 checkDeath(player, projectile)
             }
-        } enemies = get("enemy")
+        }
+        if (damagesEnemies !== true) return
+        const enemies = get("enemy")
         enemies.forEach(enemy => {
             if (projectile.isColliding(enemy) && damagesEnemies === true) {
                 if (!projectile.hit) { // Check if the hit property is false
@@ -2838,7 +2874,7 @@ function getEnemyAttributes(entityName, currentRound, difficulty) {
     } else if (entityName === "venus") {
         enemyAttributes = {
             health: 125 * difficultyMultiplier,
-            healthbar: 125* difficultyMultiplier,
+            healthbar: 125 * difficultyMultiplier,
             aggression: 60 * difficultyMultiplier,
             speed: 7 * difficultyMultiplier,
             weight: 2,
@@ -3096,6 +3132,7 @@ async function spawnWave(enemyQueue, entityCap) {
 }
 
 function registerPlayerControls(player) {
+    clearPlayerControls()
     // Player controls (keyDown events)
     playerControlEvents.keyDown.push(onKeyDown("left", () => {
         if (currentRound === 2 && (player.worldPos().x < 225) && player.worldPos().y < 468) return
@@ -3228,7 +3265,7 @@ function registerPlayerControls(player) {
             player.speedCooldown = false
         }
         else {
-            if(isKeyDown("z") || isKeyDown("x")) return
+            if (isKeyDown("z") || isKeyDown("x")) return
             player.defense = 0.95
             performAttack(player, "block")
         }
@@ -3265,6 +3302,7 @@ function registerPlayerControls(player) {
 
 async function levelInit(playerTag, introText, songName, backgrounds) { // Function that runs the common code for all levels
     destroyAll(obj => !obj.is("bg"));
+    clearInterval(oldManSpawn) // setInterval isn't scene-bound, so make sure none survives into a new stage
     difficultyMultiplier = ((currentRound + (4 + difficulty * 2)) / 10)
     if (enemyAIBasic !== null) disableEnemyAI(); // Stops the enemy AI from running
     enableEnemyAI() // Enables enemy AI (movement, attacking, etc.)
@@ -3306,6 +3344,7 @@ async function levelInit(playerTag, introText, songName, backgrounds) { // Funct
         })
     })
     player.play("idle")
+    createLivesHud()
     const isRoundFour = introText.toLowerCase().includes("elevator")
 
     player.onUpdate(() => {
@@ -3375,6 +3414,956 @@ async function levelInit(playerTag, introText, songName, backgrounds) { // Funct
     registerPlayerControls(player) // Registers events for player controls
     playerControlEnabled = true // Enables player controls (movement, jumping, etc.)
 }
+
+const BOSS_TYPES = ["ladro", "grigory", "fightyMan", "venus", "hodson", "djinn"]
+const isBossType = (e) => BOSS_TYPES.includes(e.attackType)
+const isInsane = () => difficulty >= 4 // 4 = "Insane Difficulty"
+const clampN = (n, lo, hi) => Math.max(lo, Math.min(hi, n))
+const rnd = (lo, hi) => lo + Math.random() * (hi - lo)
+const RAD2DEG = 180 / Math.PI
+
+// Leak fix: bosses used to push "enemy" onto collisionIgnore every frame.
+function ignoreEnemyCollisions(e) {
+    if (!e.collisionIgnore.includes("enemy")) e.collisionIgnore.push("enemy")
+}
+
+// Leak fix: cancel AND empty the control arrays so old players/closures can be collected.
+function clearPlayerControls() {
+    playerControlEvents.keyDown.forEach(ev => ev.cancel())
+    playerControlEvents.keyUp.forEach(ev => ev.cancel())
+    playerControlEvents.keyDown.length = 0
+    playerControlEvents.keyUp.length = 0
+}
+
+// Plays an animation without throwing if the sprite lacks it.
+function safePlay(e, name, force = false) {
+    try {
+        if (!e.exists()) return
+        if (force || e.curAnim() !== name) e.play(name)
+    } catch (err) { /* sprite has no such animation */ }
+}
+
+// ---------------------------------------------------------------------
+// 2) LIVES SYSTEM
+// ---------------------------------------------------------------------
+let lives = 1
+const LIVES_BY_MODE = { main: 3, stage_select: 1, boss_rush: 1, infinity: 1 }
+
+function beginRun() { // call when a run starts (character select)
+    lives = LIVES_BY_MODE[gameMode] ?? 1
+}
+
+function createLivesHud() {
+    add([
+        text(`LIVES x${lives}`, { size: 28 }),
+        pos(40, 215),
+        color(255, 255, 255),
+        fixed(),
+        z(60),
+        "livesHud"
+    ])
+}
+
+function updateLivesHud() {
+    const hud = get("livesHud")[0]
+    if (hud) hud.text = `LIVES x${Math.max(0, lives)}`
+}
+
+// Called from checkDeath when the player dies and still has lives left.
+async function respawnPlayer(player) {
+    player.dead = true // set synchronously so a second hit can't cost another life
+    player.invulnerable = true
+    playerControlEnabled = false
+    clearPlayerControls()
+    player.defense = 0
+    play("knocked_down")
+    safePlay(player, "downed", true)
+    const dir = player.flipX ? 1 : -1
+    tween(player.pos.x, clampN(player.pos.x + dir * 120, 100, width() - 100), 0.4,
+        (v) => { if (player.exists()) player.pos.x = v }, easings.easeOutCubic)
+
+    await Promise.all([
+        roundText("Life", height() / 2 - 96, "left", false, 0.6),
+        roundText("Lost", height() / 2 + 96, "right", false, 0.6),
+    ])
+    if (!player.exists() || game_over) return
+
+    player.setHP(player.healthbar.maxHealth)
+    player.healthbar.reset()
+    player.pos = vec2(width() / 2, height() - (currentRound === 4 ? 400 : 200))
+    player.dead = false
+    safePlay(player, "idle", true)
+    registerPlayerControls(player)
+    playerControlEnabled = true
+
+    // ~2 seconds of blinking invulnerability
+    for (let i = 0; i < 16; i++) {
+        if (!player.exists()) return
+        player.opacity = (i % 2 === 0) ? 0.35 : 1
+        await wait(0.125)
+    }
+    if (player.exists()) {
+        player.opacity = 1
+        player.invulnerable = false
+    }
+}
+
+// ---------------------------------------------------------------------
+// 3) KNOCKDOWN (non-boss enemies only)
+//    3 jabs within 1 second, or 1 cross, knocks an enemy down for a moment.
+// ---------------------------------------------------------------------
+const KNOCKDOWN = {
+    jabsNeeded: 3,
+    jabWindow: 1.0,    // seconds in which the jabs must land
+    duration: 1.6,     // seconds spent on the floor
+    immunity: 1.2,     // seconds after getting up where they can't be knocked down again
+    pushDistance: 130, // how far they slide away from the attacker
+}
+// Joseph/Andrew have a "knockedDown" frame; Gary/David only have "downed".
+const KNOCKDOWN_ANIMS = { joseph: "knockedDown", andrew: "knockedDown", gary: "downed", david: "downed" }
+
+function registerJabHit(enemy, attacker) {
+    if (isBossType(enemy) || enemy.dead || enemy.knockedDown) return
+    const now = time()
+    enemy.jabHits = (enemy.jabHits || []).filter(t => now - t <= KNOCKDOWN.jabWindow)
+    enemy.jabHits.push(now)
+    if (enemy.jabHits.length >= KNOCKDOWN.jabsNeeded) knockDownEnemy(enemy, attacker)
+}
+
+async function knockDownEnemy(enemy, attacker) {
+    if (isBossType(enemy) || enemy.dead || enemy.knockedDown) return
+    if (enemy.hp() <= 0) return // dying enemies are handled by checkDeath
+    if (enemy.knockdownImmuneUntil && time() < enemy.knockdownImmuneUntil) return
+
+    enemy.knockedDown = true
+    enemy.jabHits = []
+    try { enemy.get("atkHitbox").forEach(h => h.destroy()) } catch (err) { }
+
+    play("knocked_down", { volume: 0.6 })
+    const dir = (attacker && attacker.pos.x < enemy.pos.x) ? 1 : -1 // away from the attacker
+    safePlay(enemy, KNOCKDOWN_ANIMS[enemy.sprite] || "downed", true)
+    tween(enemy.pos.x, clampN(enemy.pos.x + dir * KNOCKDOWN.pushDistance, 0, width()), 0.3,
+        (v) => { if (enemy.exists()) enemy.pos.x = v }, easings.easeOutCubic)
+
+    await wait(0.35)
+    if (!enemy.exists() || enemy.dead) return
+    safePlay(enemy, "downed", true)
+    await wait(KNOCKDOWN.duration - 0.35)
+    if (!enemy.exists() || enemy.dead) return
+
+    enemy.knockedDown = false
+    enemy.knockdownImmuneUntil = time() + KNOCKDOWN.immunity
+    safePlay(enemy, "idle", true)
+}
+
+// ---------------------------------------------------------------------
+// 4) INSANE DIFFICULTY - INFERNUM-STYLE BOSS AI
+//    Every boss runs its own async attack loop with 3 phases (66% / 33% hp),
+//    telegraphed attacks, predictive aim, safe-gap patterns and a burst on
+//    each phase change. The legacy AI is untouched on other difficulties.
+// ---------------------------------------------------------------------
+const ARENA = { minX: 160, maxX: 1760, minY: 440, maxY: 840 }
+const LANES = [520, 630, 740]  // three depth lanes the player can stand in
+const LANE_H = 110             // lane band height (= lane spacing)
+const PHW = 40, PHH = 50       // half-size of the player's hurtbox for boss attacks
+const STRIP_HW = 60            // half-width of a lightning strip
+const LADRO_Y = 240            // Ladro's hover height
+const DMG = { bolt: 14, heavy: 22, strike: 30, melee: 38 }
+const BOSS_DONE = Symbol("boss_done")
+
+// ---- state helpers ----
+function bossAlive(e) { return e.exists() && !e.dead && !game_over }
+
+function bossPhase(e) {
+    const f = e.hp() / e.healthbar.maxHealth
+    return f > 0.66 ? 1 : (f > 0.33 ? 2 : 3)
+}
+
+function rageFactor(e) { // 1.0 at full hp, up to 1.6 near death
+    return 1 + (1 - clampN(e.hp() / e.healthbar.maxHealth, 0, 1)) * 0.6
+}
+
+async function bossWait(e, t) { // wait, but abort the whole routine if the boss died
+    await wait(t)
+    if (!bossAlive(e)) throw BOSS_DONE
+}
+
+async function moveBoss(e, target, dur, ease = easings.easeInOutCubic) {
+    await tween(e.pos.clone(), target, dur, (p) => { if (e.exists()) e.pos = p }, ease)
+    if (!bossAlive(e)) throw BOSS_DONE
+}
+
+// ---- player tracking / aiming ----
+function ensureVelTracker(p) { // estimates the player's velocity for predictive aim
+    if (p.velTracked) return
+    p.velTracked = true
+    p.estVx = 0
+    p.estVy = 0
+    let lastX = p.pos.x, lastY = p.pos.y
+    p.onUpdate(() => {
+        const d = dt()
+        if (d <= 0) return
+        p.estVx = p.estVx * 0.8 + ((p.pos.x - lastX) / d) * 0.2
+        p.estVy = p.estVy * 0.8 + ((p.pos.y - lastY) / d) * 0.2
+        lastX = p.pos.x
+        lastY = p.pos.y
+    })
+}
+
+function leadPoint(lead = 0.3) {
+    const p = get("player")[0]
+    if (!p) return { x: width() / 2, y: 640 }
+    return {
+        x: clampN(p.pos.x + (p.estVx || 0) * lead, ARENA.minX, ARENA.maxX),
+        y: clampN(p.pos.y + (p.estVy || 0) * lead, ARENA.minY, ARENA.maxY),
+    }
+}
+
+function aimAt(fromX, fromY, lead = 0.3) { // angle in degrees (0 = right, 90 = down)
+    const t = leadPoint(lead)
+    return Math.atan2(t.y - fromY, t.x - fromX) * RAD2DEG
+}
+
+function angleDiff(a, b) { return Math.abs((((a - b) % 360) + 540) % 360 - 180) }
+
+// ---- hit tests & damage ----
+function playerInCircle(x, y, r) {
+    const p = get("player")[0]
+    return !!p && !p.dead && Math.hypot(p.pos.x - x, p.pos.y - y) < r + 20
+}
+
+function playerInBox(x, y, hw, hh) {
+    const p = get("player")[0]
+    return !!p && !p.dead && Math.abs(p.pos.x - x) < hw + PHW && Math.abs(p.pos.y - y) < hh + PHH
+}
+
+function hurtPlayer(amount) {
+    const p = get("player")[0]
+    if (!p || p.dead || p.invulnerable || p.iframes) return false
+    const dmg = amount * (p.defense > 0.5 ? 0.5 : 1) // blocking halves boss damage
+    p.iframes = true // 0.35s of mercy so overlapping hazards can't stack in one frame
+    wait(0.35, () => { if (p.exists()) p.iframes = false })
+    p.hurt(dmg)
+    p.healthbar.hurt(dmg)
+    play("enemyPunch1")
+    shake(4)
+    checkDeath(p)
+    return true
+}
+
+// ---- visual telegraphs / effects (all self-destroying) ----
+function telegraphCircle(x, y, r, dur, col = [255, 60, 40]) {
+    const t = add([circle(r), pos(x, y), color(col[0], col[1], col[2]), opacity(0.15), z(3), "fx"])
+    tween(0.15, 0.6, dur, (v) => { if (t.exists()) t.opacity = v }, easings.linear)
+    wait(dur, () => { if (t.exists()) t.destroy() })
+}
+
+function telegraphBox(x, y, w, h, dur, col = [255, 60, 40], angle = 0) {
+    const t = add([rect(w, h), pos(x, y), anchor("center"), rotate(angle), color(col[0], col[1], col[2]), opacity(0.15), z(3), "fx"])
+    tween(0.15, 0.6, dur, (v) => { if (t.exists()) t.opacity = v }, easings.linear)
+    wait(dur, () => { if (t.exists()) t.destroy() })
+}
+
+function telegraphLine(x1, y1, x2, y2, thick, dur, col = [255, 60, 40]) {
+    telegraphBox((x1 + x2) / 2, (y1 + y2) / 2, Math.hypot(x2 - x1, y2 - y1), thick, dur, col,
+        Math.atan2(y2 - y1, x2 - x1) * RAD2DEG)
+}
+
+function explosionFx(x, y, r, col = [255, 140, 40]) {
+    const fx = add([circle(r * 0.4), pos(x, y), color(col[0], col[1], col[2]), opacity(0.8), scale(1), z(45), "fx"])
+    tween(1, 2.5, 0.3, (v) => { if (fx.exists()) fx.scale = vec2(v) }, easings.easeOutCubic)
+    tween(0.8, 0, 0.3, (v) => { if (fx.exists()) fx.opacity = v }, easings.linear)
+    wait(0.32, () => { if (fx.exists()) fx.destroy() })
+}
+
+function lightningColumn(x, cy) {
+    const l = add([sprite("lightning"), pos(x, cy), scale(8), anchor("center"), opacity(1), z(46), "fx"])
+    l.play("idle")
+    tween(1, 0, 0.35, (v) => { if (l.exists()) l.opacity = v }, easings.linear)
+    wait(0.36, () => { if (l.exists()) l.destroy() })
+}
+
+// ---- projectiles: velocity based, self-cleaning, no global listeners ----
+// o: { spr, anim, x, y, angle, speed, dmg, scale, r, box:[hw,hh], life,
+//      homing (deg/s), homingTime, turn (seconds -> reverses), pierce }
+function fireBolt(o) {
+    const rad = (o.angle || 0) / RAD2DEG
+    const speed = o.speed || 400
+    let vx = Math.cos(rad) * speed
+    let vy = Math.sin(rad) * speed
+    let age = 0
+    let turned = false
+    let target = get("player")[0]
+
+    const b = add([
+        sprite(o.spr),
+        pos(o.x, o.y),
+        scale(o.scale || 4),
+        anchor("center"),
+        rotate(o.rot || 0),
+        opacity(1),
+        z(40),
+        "infernumBolt",
+    ])
+    if (o.anim) b.play(o.anim)
+
+    b.onUpdate(() => { // removed automatically when the bolt is destroyed
+        const d = dt()
+        age += d
+        if (!target || !target.exists()) target = get("player")[0]
+
+        if (o.homing && target && age < (o.homingTime || 2)) {
+            const want = Math.atan2(target.pos.y - b.pos.y, target.pos.x - b.pos.x)
+            let cur = Math.atan2(vy, vx)
+            let diff = want - cur
+            while (diff > Math.PI) diff -= 2 * Math.PI
+            while (diff < -Math.PI) diff += 2 * Math.PI
+            const step = (o.homing / RAD2DEG) * d
+            cur += clampN(diff, -step, step)
+            const sp = Math.hypot(vx, vy)
+            vx = Math.cos(cur) * sp
+            vy = Math.sin(cur) * sp
+        }
+        if (o.turn && !turned && age > o.turn) { vx = -vx; vy = -vy; turned = true }
+
+        b.pos.x += vx * d
+        b.pos.y += vy * d
+        b.flipX = vx < 0
+        b.z = (b.pos.y - 460) / 10
+
+        if (age > (o.life || 6) || b.pos.x < -400 || b.pos.x > width() + 400 ||
+            b.pos.y < -1300 || b.pos.y > height() + 400) {
+            b.destroy()
+            return
+        }
+        if (b.spent || !target || target.dead || target.invulnerable) return
+
+        const dx = Math.abs(target.pos.x - b.pos.x)
+        const dy = Math.abs(target.pos.y - b.pos.y)
+        const hit = o.box
+            ? (dx < o.box[0] + PHW && dy < o.box[1] + PHH)
+            : (Math.hypot(dx, dy) < (o.r || 36) + 45)
+        if (hit && hurtPlayer(o.dmg || DMG.bolt)) {
+            if (o.pierce) b.spent = true
+            else b.destroy()
+        }
+    })
+    return b
+}
+
+// Ring of bolts. gapAt/gapWidth (degrees) leave a hole to escape through.
+function radialBurst(x, y, count, speed, o = {}) {
+    const offset = o.offset || 0
+    for (let i = 0; i < count; i++) {
+        const a = offset + (360 / count) * i
+        if (o.gapWidth && angleDiff(a, o.gapAt) < o.gapWidth / 2) continue
+        fireBolt({
+            spr: o.spr || "fireProj", anim: o.anim, x, y, angle: a, speed,
+            dmg: o.dmg || DMG.bolt, scale: o.scale || 4, r: o.r || 34, life: o.life || 5,
+            homing: o.homing, homingTime: o.homingTime,
+        })
+    }
+}
+
+// Telegraphed circular explosion at a spot.
+async function groundStrike(x, y, r, dmg, delay, kind = "fire") {
+    const lightning = kind === "lightning"
+    telegraphCircle(x, y, r, delay, lightning ? [120, 160, 255] : [255, 60, 40])
+    await wait(delay)
+    if (game_over) return
+    explosionFx(x, y, r, lightning ? [160, 200, 255] : [255, 140, 40])
+    play(lightning ? "lightning" : "fireShort", { volume: 0.5 })
+    if (lightning) lightningColumn(x, y - 300)
+    if (playerInCircle(x, y, r)) hurtPlayer(dmg)
+}
+
+// Telegraphed full-height lightning strip (Djinn).
+async function lightningStrip(x, delay, dmg = DMG.strike) {
+    telegraphBox(x, 640, 2 * (STRIP_HW + PHW), 760, delay, [120, 160, 255])
+    await wait(delay)
+    if (game_over) return
+    lightningColumn(x, 470)
+    play("lightning", { volume: 0.5 })
+    shake(8)
+    const p = get("player")[0]
+    if (p && !p.dead && Math.abs(p.pos.x - x) < STRIP_HW + PHW) hurtPlayer(dmg)
+}
+
+// ---- generic boss loop ----
+// sets: [phase1Attacks[], phase2Attacks[], phase3Attacks[]]  (attacks cycle in order)
+// recovery(ph): seconds of rest between attacks.  repos: optional { anim, to() }
+async function bossLoop(e, sets, recovery, repos = null) {
+    let lastPhase = 1
+    let idx = 0
+    while (bossAlive(e)) {
+        const ph = bossPhase(e)
+        if (ph !== lastPhase) {
+            lastPhase = ph
+            idx = 0
+            await phaseShift(e)
+        }
+        const list = sets[Math.min(ph, sets.length) - 1]
+        const attack = list[idx++ % list.length]
+        await attack(e, ph)
+        await bossWait(e, Math.max(0.2, recovery(ph) / rageFactor(e)))
+        if (repos) {
+            safePlay(e, repos.anim, true)
+            await moveBoss(e, repos.to(), 0.8 / rageFactor(e))
+            safePlay(e, "idle", true)
+        }
+    }
+}
+
+async function phaseShift(e) { // roar + escapable ring on every phase change
+    play("flamethrower")
+    shake(14)
+    radialBurst(e.pos.x, e.pos.y, 18, 340, { gapAt: aimAt(e.pos.x, e.pos.y, 0), gapWidth: 50 })
+    await bossWait(e, 1.0)
+}
+
+// ======================= LADRO (flying) =======================
+async function ladroCarpet(e, ph) {
+    const dir = Math.random() < 0.5 ? 1 : -1
+    const startX = dir > 0 ? 100 : width() - 100
+    const endX = dir > 0 ? width() - 100 : 100
+    await moveBoss(e, vec2(startX, LADRO_Y), 0.6 / rageFactor(e))
+
+    const gapX = rnd(350, width() - 350)
+    telegraphBox(gapX, 640, 220, 700, 0.9, [90, 255, 130]) // the safe pocket
+    play("beep")
+    await bossWait(e, 0.8)
+
+    let lastDrop = -999
+    const dropper = onUpdate(() => {
+        if (!e.exists()) return
+        if (Math.abs(e.pos.x - lastDrop) >= 115) {
+            lastDrop = e.pos.x
+            if (Math.abs(e.pos.x - gapX) > 190) {
+                fireBolt({ spr: "ladroDropping", x: e.pos.x, y: e.pos.y + 40, angle: 90, speed: 560 + ph * 80, dmg: DMG.bolt, scale: 8, r: 34, life: 3 })
+            }
+        }
+    })
+    try { await moveBoss(e, vec2(endX, LADRO_Y), 1.5 / rageFactor(e), easings.linear) }
+    finally { dropper.cancel() }
+
+    if (ph >= 2) { // aimed fan from where he ends up
+        const a = aimAt(e.pos.x, e.pos.y, 0.3)
+        for (let k = -2; k <= 2; k++) {
+            fireBolt({ spr: "ladroDropping", x: e.pos.x, y: e.pos.y, angle: a + k * 12, speed: 600, dmg: DMG.bolt, scale: 8, r: 34, life: 3 })
+        }
+    }
+}
+
+async function ladroDive(e, ph) {
+    for (let i = 0; i < ph; i++) {
+        const above = leadPoint(0)
+        await moveBoss(e, vec2(above.x, LADRO_Y), 0.4 / rageFactor(e))
+        const t = leadPoint(0.25)
+        telegraphLine(e.pos.x, e.pos.y, t.x, t.y, 120, 0.55 / rageFactor(e))
+        play("beep")
+        await bossWait(e, 0.55 / rageFactor(e))
+
+        let hit = false
+        const chk = onUpdate(() => {
+            if (!hit && e.exists() && playerInCircle(e.pos.x, e.pos.y, 85)) hit = hurtPlayer(DMG.melee)
+        })
+        try { await moveBoss(e, vec2(t.x, t.y), 0.26, easings.easeInExpo) }
+        finally { chk.cancel() }
+
+        shake(10)
+        play("enemyPunch3")
+        explosionFx(t.x, t.y, 150)
+        if (ph >= 2) radialBurst(t.x, t.y, 10, 380, { r: 30, gapAt: aimAt(t.x, t.y, 0), gapWidth: 55 })
+        await bossWait(e, 0.35)
+    }
+    await moveBoss(e, vec2(width() / 2, LADRO_Y), 0.6)
+}
+
+async function ladroRain(e, ph) {
+    await moveBoss(e, vec2(width() / 2, LADRO_Y), 0.5)
+    const n = 5 + ph * 2
+    for (let i = 0; i < n; i++) {
+        const t = leadPoint(0.2)
+        const side = i % 2 === 0 ? 1 : -1
+        const x = clampN(t.x + side * rnd(40, 260), ARENA.minX, ARENA.maxX)
+        const y = clampN(t.y + rnd(-60, 60), ARENA.minY, ARENA.maxY)
+        groundStrike(x, y, 120, DMG.strike, 0.85 / rageFactor(e)) // fire-and-forget
+        await bossWait(e, 0.32 / rageFactor(e))
+    }
+    await bossWait(e, 0.9)
+}
+
+// ======================= GRIGORY (gunslinger) =======================
+async function gSnipeVolley(e, ph) {
+    const side = Math.random() < 0.5 ? ARENA.minX + 40 : ARENA.maxX - 40
+    safePlay(e, "walking", true)
+    await moveBoss(e, vec2(side, rnd(560, 720)), 0.5 / rageFactor(e))
+    for (let i = 0; i < 2 + ph; i++) {
+        safePlay(e, "loading", true)
+        play("reload")
+        const a = aimAt(e.pos.x, e.pos.y, 0.35)
+        const rad = a / RAD2DEG
+        telegraphLine(e.pos.x, e.pos.y, e.pos.x + Math.cos(rad) * 1900, e.pos.y + Math.sin(rad) * 1900, 14, 0.45)
+        await bossWait(e, 0.45 / rageFactor(e))
+        safePlay(e, "shoot", true)
+        play("shoot")
+        const n = 3 + ph
+        for (let k = 0; k < n; k++) {
+            fireBolt({ spr: "bullet", x: e.pos.x, y: e.pos.y + 10, angle: a + (k - (n - 1) / 2) * 9, speed: 950, dmg: DMG.bolt, scale: 3, r: 20, life: 3 })
+        }
+        await bossWait(e, 0.25)
+    }
+    safePlay(e, "idle", true)
+}
+
+async function gCrossfire(e, ph) {
+    safePlay(e, "loading", true)
+    play("reload")
+    const waves = ph >= 3 ? 3 : 2
+    for (let w = 0; w < waves; w++) {
+        const safe = getRandomNumber(0, LANES.length - 1)
+        LANES.forEach((ly, i) => {
+            telegraphBox(width() / 2, ly, width(), LANE_H, 0.85, i === safe ? [90, 255, 130] : [255, 60, 40])
+        })
+        play("beep")
+        await bossWait(e, 0.85 / rageFactor(e))
+        safePlay(e, "shoot", true)
+        play("shoot")
+        LANES.forEach((ly, i) => {
+            if (i === safe) return
+            const fromLeft = (i + w) % 2 === 0
+            fireBolt({ spr: "bullet", x: fromLeft ? -60 : width() + 60, y: ly, angle: fromLeft ? 0 : 180, speed: 1100, dmg: DMG.heavy, scale: 3, box: [30, 5], life: 3 })
+        })
+        await bossWait(e, 0.55)
+    }
+    safePlay(e, "idle", true)
+}
+
+async function gCharge(e, ph) {
+    const dashes = ph >= 3 ? 2 : 1
+    for (let i = 0; i < dashes; i++) {
+        const t = leadPoint(0.3)
+        telegraphLine(e.pos.x, e.pos.y, t.x, t.y, 100, 0.6)
+        safePlay(e, "walking", true)
+        play("beep")
+        await bossWait(e, 0.6 / rageFactor(e))
+
+        let hit = false
+        const chk = onUpdate(() => {
+            if (!hit && e.exists() && playerInCircle(e.pos.x, e.pos.y, 80)) hit = hurtPlayer(DMG.melee)
+        })
+        try { await moveBoss(e, vec2(t.x, t.y), 0.4 / rageFactor(e), easings.easeInExpo) }
+        finally { chk.cancel() }
+
+        safePlay(e, "shoot", true)
+        play("shoot")
+        const a = aimAt(e.pos.x, e.pos.y, 0)
+        for (let k = -2; k <= 2; k++) {
+            fireBolt({ spr: "bullet", x: e.pos.x, y: e.pos.y, angle: a + k * 11, speed: 900, dmg: DMG.bolt, scale: 3, r: 20, life: 3 })
+        }
+        radialBurst(e.pos.x, e.pos.y, ph >= 2 ? 12 : 8, 520, { spr: "bullet", scale: 3, r: 20, gapAt: a, gapWidth: 60 })
+        await bossWait(e, 0.4)
+    }
+    safePlay(e, "idle", true)
+}
+
+async function gBarrage(e, ph) {
+    await moveBoss(e, vec2(width() / 2 + rnd(-300, 300), 600), 0.5)
+    safePlay(e, "loading", true)
+    play("reload")
+    await bossWait(e, 0.6)
+    for (let i = 0; i < 16; i++) {
+        const a = aimAt(e.pos.x, e.pos.y, 0.25) + Math.sin(i * 0.9) * 28
+        play("shoot", { volume: 0.4 })
+        safePlay(e, "shoot", true)
+        fireBolt({ spr: "bullet", x: e.pos.x, y: e.pos.y + 10, angle: a, speed: 850, dmg: DMG.bolt, scale: 3, r: 20, life: 3 })
+        await bossWait(e, 0.13 / rageFactor(e))
+    }
+    safePlay(e, "idle", true)
+}
+
+// ======================= HODSON (office terror) =======================
+async function hStapleFan(e, ph) {
+    safePlay(e, "stapler", true)
+    for (let v = 0; v < 2 + ph; v++) {
+        const a = aimAt(e.pos.x, e.pos.y, 0.3)
+        play("reload")
+        const n = 3 + ph
+        for (let k = 0; k < n; k++) {
+            fireBolt({ spr: "staple", x: e.pos.x, y: e.pos.y, angle: a + (k - (n - 1) / 2) * 12, speed: 780, dmg: DMG.bolt, scale: 5, r: 28, life: 3 })
+        }
+        await bossWait(e, 0.55 / rageFactor(e))
+    }
+    safePlay(e, "idle", true)
+}
+
+async function hAxeCombo(e, ph) {
+    const swings = ph + 1
+    for (let i = 0; i < swings; i++) {
+        const t = leadPoint(0.25)
+        const windup = 0.6 / rageFactor(e)
+        telegraphCircle(t.x, t.y, 230, windup)
+        safePlay(e, "walking", true)
+        play("beep")
+        await moveBoss(e, vec2(t.x, t.y), windup, easings.easeInOutCubic)
+        safePlay(e, "cross", true)
+        play("axe")
+        shake(8)
+        explosionFx(e.pos.x, e.pos.y, 230, [220, 220, 255])
+        if (playerInCircle(e.pos.x, e.pos.y, 230)) hurtPlayer(DMG.melee)
+        if (ph >= 2) radialBurst(e.pos.x, e.pos.y, 8, 450, { spr: "staple", scale: 4, r: 26, gapAt: aimAt(e.pos.x, e.pos.y, 0), gapWidth: 60 })
+        await bossWait(e, (ph >= 3 && i === swings - 2) ? 0.9 : 0.3) // phase 3: delayed fake-out swing
+    }
+    safePlay(e, "idle", true)
+}
+
+async function hStapleRain(e, ph) {
+    safePlay(e, "stapler", true)
+    const n = 6 + ph * 2
+    for (let i = 0; i < n; i++) {
+        const aimed = i % 3 === 0
+        const t = leadPoint(aimed ? 0.4 : 0)
+        const x = aimed ? t.x : clampN(t.x + rnd(-380, 380), ARENA.minX, ARENA.maxX)
+        const y = aimed ? t.y : clampN(t.y + rnd(-100, 100), ARENA.minY, ARENA.maxY)
+        groundStrike(x, y, 105, DMG.strike, 0.8 / rageFactor(e))
+        await bossWait(e, 0.2 / rageFactor(e))
+    }
+    await bossWait(e, 0.8)
+    safePlay(e, "idle", true)
+}
+
+async function hBoomerang(e, ph) {
+    safePlay(e, "stapler", true)
+    play("reload")
+    for (let i = 0; i < 2; i++) {
+        const a = aimAt(e.pos.x, e.pos.y, 0.2) + (i === 0 ? -14 : 14)
+        fireBolt({ spr: "staple", x: e.pos.x, y: e.pos.y, angle: a, speed: 900, dmg: DMG.heavy, scale: 10, r: 60, life: 3.2, turn: 0.75, pierce: true })
+        await bossWait(e, 0.5)
+    }
+    await bossWait(e, 1.6)
+    safePlay(e, "idle", true)
+}
+
+// ======================= VENUS (solar sweeps) =======================
+async function vSweep(e, ph) {
+    let dir = Math.random() < 0.5 ? 1 : -1
+    for (let i = 0; i < ph + 1; i++) {
+        const p = get("player")[0]
+        const py = p ? p.pos.y : 630
+        const lane = LANES.reduce((best, ly) => Math.abs(ly - py) < Math.abs(best - py) ? ly : best, LANES[0])
+        telegraphBox(width() / 2, lane, width(), LANE_H, 0.75, [255, 60, 40])
+        play("beep")
+        e.flipX = dir < 0
+        await moveBoss(e, vec2(dir > 0 ? -260 : width() + 260, lane), 0.3)
+        await bossWait(e, 0.45 / rageFactor(e))
+
+        let hit = false
+        let last = e.pos.x
+        const chk = onUpdate(() => {
+            if (!hit && e.exists() && playerInBox(e.pos.x, e.pos.y, 120, 5)) hit = hurtPlayer(DMG.melee)
+        })
+        const emit = onUpdate(() => { // phase 2+: sparse vertical fire trails
+            if (!e.exists() || ph < 2) return
+            if (Math.abs(e.pos.x - last) >= 360) {
+                last = e.pos.x
+                fireBolt({ spr: "fireProj", x: e.pos.x, y: e.pos.y, angle: 90, speed: 330, dmg: DMG.bolt, scale: 4, r: 26, life: 3 })
+                fireBolt({ spr: "fireProj", x: e.pos.x, y: e.pos.y, angle: -90, speed: 330, dmg: DMG.bolt, scale: 4, r: 26, life: 3 })
+            }
+        })
+        play("fireLong")
+        try { await moveBoss(e, vec2(dir > 0 ? width() + 260 : -260, lane), 1.05 / rageFactor(e), easings.linear) }
+        finally { chk.cancel(); emit.cancel() }
+        dir = -dir
+    }
+}
+
+async function vSpiral(e, ph) {
+    await moveBoss(e, vec2(width() / 2, 560), 0.7)
+    play("flamethrower")
+    const arms = ph + 1
+    const duration = 2.6
+    const interval = 0.075
+    let angle = rnd(0, 360)
+    const spin = Math.random() < 0.5 ? 1 : -1
+    for (let t = 0; t < duration; t += interval) {
+        for (let a = 0; a < arms; a++) {
+            fireBolt({ spr: "fireProj", x: e.pos.x, y: e.pos.y, angle: angle + (360 / arms) * a, speed: 400, dmg: DMG.bolt, scale: 4, r: 30, life: 5 })
+        }
+        angle += 17 * spin * ((t > duration / 2 && ph >= 3) ? -1 : 1)
+        await bossWait(e, interval)
+    }
+    await bossWait(e, 0.6)
+}
+
+async function vOrbs(e, ph) {
+    await moveBoss(e, vec2(rnd(500, 1400), rnd(520, 640)), 0.6)
+    play("fireShort")
+    for (let i = 0; i < 2 + ph; i++) {
+        fireBolt({ spr: "fireProj", x: e.pos.x, y: e.pos.y, angle: rnd(0, 360), speed: 300, dmg: DMG.heavy, scale: 6, r: 44, life: 6, homing: 75, homingTime: 3.5 })
+        await bossWait(e, 0.35)
+    }
+    await bossWait(e, 1.5)
+}
+
+// ======================= FIGHTY MAN (final boss) =======================
+async function fWallRun(e, ph) {
+    safePlay(e, "summon", true)
+    for (let w = 0; w < ph + 1; w++) {
+        const safe = getRandomNumber(0, LANES.length - 1)
+        LANES.forEach((ly, i) => {
+            telegraphBox(width() / 2, ly, width(), LANE_H, 0.9, i === safe ? [90, 255, 130] : [255, 90, 20])
+        })
+        play("beep")
+        await bossWait(e, 0.9 / rageFactor(e))
+        play("fireLong")
+        LANES.forEach((ly, i) => {
+            if (i === safe) return
+            const fromRight = (i + w) % 2 === 0
+            fireBolt({ spr: "firebar", anim: "idle", x: fromRight ? width() + 120 : -120, y: ly, angle: fromRight ? 180 : 0, speed: 850, dmg: DMG.heavy, scale: 5, box: [75, 5], life: 4, pierce: true })
+        })
+        await bossWait(e, 0.8)
+    }
+    safePlay(e, "idle", true)
+}
+
+async function fRingBurst(e, ph) {
+    safePlay(e, "fireProj", true)
+    const baseGap = aimAt(e.pos.x, e.pos.y, 0.2)
+    for (let i = 0; i < ph + 2; i++) {
+        play("fireShort")
+        radialBurst(e.pos.x, e.pos.y, 20, 360, { offset: i * 9, gapAt: baseGap + i * 40, gapWidth: 38 })
+        await bossWait(e, 0.6 / rageFactor(e))
+    }
+    safePlay(e, "idle", true)
+}
+
+async function fPunchChain(e, ph) {
+    for (let i = 0; i < ph + 1; i++) {
+        const t = leadPoint(0.25)
+        const windup = 0.55 / rageFactor(e)
+        telegraphCircle(t.x, t.y, 200, windup, [255, 90, 20])
+        safePlay(e, "walking", true)
+        play("fireShort")
+        await moveBoss(e, vec2(t.x, t.y), windup, easings.easeInOutCubic)
+        safePlay(e, "flarePunch", true)
+        play("flamethrower")
+        shake(10)
+        explosionFx(e.pos.x, e.pos.y, 200)
+        if (playerInCircle(e.pos.x, e.pos.y, 200)) hurtPlayer(DMG.melee)
+        if (ph >= 2) radialBurst(e.pos.x, e.pos.y, 10, 420, { r: 30, gapAt: aimAt(e.pos.x, e.pos.y, 0), gapWidth: 45 })
+        await bossWait(e, 0.25)
+    }
+    safePlay(e, "idle", true)
+}
+
+async function fMeteors(e, ph) {
+    safePlay(e, "summon", true)
+    play("fireLong")
+    for (let i = 0; i < 8 + ph * 3; i++) {
+        const aimed = i % 3 === 0
+        const t = leadPoint(aimed ? 0.45 : 0)
+        const x = aimed ? t.x : clampN(t.x + rnd(-450, 450), ARENA.minX, ARENA.maxX)
+        const y = aimed ? t.y : clampN(t.y + rnd(-110, 110), ARENA.minY, ARENA.maxY)
+        groundStrike(x, y, 140, DMG.strike, 1.0 / rageFactor(e))
+        await bossWait(e, 0.22 / rageFactor(e))
+    }
+    await bossWait(e, 1.0)
+    safePlay(e, "idle", true)
+}
+
+async function fSpiral(e, ph) {
+    await moveBoss(e, vec2(width() / 2, 600), 0.8)
+    safePlay(e, "flamethrower", true)
+    play("flamethrower")
+    const arms = ph >= 3 ? 3 : 2
+    let angle = rnd(0, 360)
+    for (let t = 0; t < 3.0; t += 0.08) {
+        for (let a = 0; a < arms; a++) {
+            fireBolt({ spr: "fireProj", x: e.pos.x, y: e.pos.y, angle: angle + (360 / arms) * a, speed: 380, dmg: DMG.bolt, scale: 4, r: 30, life: 5 })
+        }
+        angle += t < 1.5 ? 14 : -14
+        await bossWait(e, 0.08)
+    }
+    await bossWait(e, 0.7)
+    safePlay(e, "idle", true)
+}
+
+async function fInferno(e, ph) { // phase 3: get out of the blast
+    const t = leadPoint(0.3)
+    telegraphCircle(t.x, t.y, 330, 1.0, [255, 90, 20])
+    safePlay(e, "walking", true)
+    play("flamethrower")
+    await moveBoss(e, vec2(t.x, t.y), 0.7)
+    safePlay(e, "fireShield", true)
+    await bossWait(e, 0.3)
+    shake(16)
+    explosionFx(e.pos.x, e.pos.y, 330)
+    if (playerInCircle(e.pos.x, e.pos.y, 330)) hurtPlayer(DMG.melee + 10)
+    radialBurst(e.pos.x, e.pos.y, 24, 520, { offset: rnd(0, 360), gapAt: rnd(0, 360), gapWidth: 40 })
+    await bossWait(e, 0.6)
+    safePlay(e, "idle", true)
+}
+
+// ======================= DJINN (chaos caster) =======================
+async function dTeleportBarrage(e, ph) {
+    const p = get("player")[0]
+    if (!p) return
+    const side = p.pos.x < width() / 2 ? 1 : -1
+    const dx = clampN(p.pos.x + side * rnd(300, 480), ARENA.minX, ARENA.maxX)
+    const dy = clampN(p.pos.y + rnd(-60, 60), ARENA.minY, ARENA.maxY)
+    telegraphCircle(dx, dy, 150, 0.7, [190, 90, 255])
+    safePlay(e, "tpStart", true)
+    play("beep")
+    await bossWait(e, 0.7 / rageFactor(e))
+    e.pos = vec2(dx, dy)
+    safePlay(e, "tpEnd", true)
+    play("fireShort")
+    if (playerInCircle(dx, dy, 150)) hurtPlayer(DMG.melee)
+    const a = aimAt(e.pos.x, e.pos.y, 0.25)
+    radialBurst(e.pos.x, e.pos.y, 14, 380, { spr: "chaosBall", anim: "idle", scale: 5, r: 30, gapAt: a, gapWidth: 50 })
+    for (let k = -1; k <= 1; k++) {
+        fireBolt({ spr: "chaosBall", anim: "idle", x: e.pos.x, y: e.pos.y, angle: a + k * 18, speed: 520, dmg: DMG.heavy, scale: 6, r: 38, life: 5 })
+    }
+    await bossWait(e, 0.7)
+    safePlay(e, "idle", true)
+}
+
+async function dLightningGrid(e, ph) {
+    safePlay(e, "lightning", true)
+    const xs = []
+    for (let x = ARENA.minX; x <= ARENA.maxX; x += 2 * (STRIP_HW + PHW)) xs.push(x) // strips tile with no gaps
+    const safe = getRandomNumber(1, xs.length - 2) // one strip is skipped = the escape route
+    const leftToRight = Math.random() < 0.5
+    const speedUp = Math.min(1.3, rageFactor(e))
+    play("beep")
+    xs.forEach((x, i) => {
+        if (i === safe) return
+        let delay = 1.0                                                  // phase 1: all at once
+        if (ph === 2) delay = 0.9 + (leftToRight ? i : xs.length - i) * 0.1 // phase 2: sweeping wave
+        if (ph >= 3) delay = (i % 2 === 0) ? 0.9 : 1.6                   // phase 3: two alternating waves
+        lightningStrip(x, delay / speedUp)
+    })
+    await bossWait(e, 2.4)
+    safePlay(e, "idle", true)
+}
+
+async function dChaosSpiral(e, ph) {
+    const spots = [vec2(480, 560), vec2(1440, 560), vec2(960, 700)]
+    for (const spot of spots) {
+        safePlay(e, "tpStart", true)
+        await moveBoss(e, spot, 0.35)
+        safePlay(e, "chaosBall", true)
+        play("fireShort")
+        const baseGap = aimAt(e.pos.x, e.pos.y, 0.2)
+        for (let r = 0; r < 3 + ph; r++) {
+            radialBurst(e.pos.x, e.pos.y, 14, 340, { spr: "chaosBall", anim: "idle", scale: 5, r: 30, offset: r * 13, gapAt: baseGap + r * 50, gapWidth: 60 })
+            await bossWait(e, 0.4 / rageFactor(e))
+        }
+    }
+    safePlay(e, "idle", true)
+}
+
+async function dOrbs(e, ph) {
+    await moveBoss(e, vec2(rnd(600, 1300), rnd(520, 660)), 0.5)
+    safePlay(e, "chaosBall", true)
+    play("fireShort")
+    for (let i = 0; i < 2 + ph; i++) {
+        fireBolt({ spr: "chaosBall", anim: "idle", x: e.pos.x, y: e.pos.y, angle: rnd(0, 360), speed: 280, dmg: DMG.heavy, scale: 7, r: 46, life: 6.5, homing: 85, homingTime: 4 })
+        await bossWait(e, 0.4)
+    }
+    await bossWait(e, 1.6)
+    safePlay(e, "idle", true)
+}
+
+async function dSuperPunch(e, ph) {
+    for (let i = 0; i < (ph >= 3 ? 2 : 1); i++) {
+        const t = leadPoint(0.3)
+        const windup = 0.8 / rageFactor(e)
+        telegraphCircle(t.x, t.y, 190, windup, [190, 90, 255])
+        safePlay(e, "tpStart", true)
+        play("beep")
+        await bossWait(e, windup)
+        e.pos = vec2(t.x, t.y)
+        safePlay(e, "superPunch", true)
+        play("flamethrower")
+        shake(14)
+        explosionFx(t.x, t.y, 190, [190, 120, 255])
+        if (playerInCircle(t.x, t.y, 190)) hurtPlayer(DMG.melee + 6)
+        radialBurst(t.x, t.y, 14, 430, { spr: "chaosBall", anim: "idle", scale: 5, r: 30, gapAt: aimAt(t.x, t.y, 0.2) + 90, gapWidth: 50 })
+        await bossWait(e, 0.5)
+    }
+    safePlay(e, "idle", true)
+}
+
+// ======================= ROUTINE TABLE =======================
+const groundRepos = () => vec2(rnd(450, 1450), rnd(560, 720))
+
+const INFERNUM_ROUTINES = {
+    ladro: async (e) => {
+        await moveBoss(e, vec2(width() / 2, LADRO_Y), 0.8)
+        await bossLoop(e, [
+            [ladroCarpet, ladroDive],
+            [ladroCarpet, ladroDive, ladroRain],
+            [ladroRain, ladroDive, ladroCarpet, ladroDive],
+        ], (ph) => 1.0 - 0.25 * (ph - 1))
+    },
+    grigory: async (e) => {
+        await moveBoss(e, vec2(1650, 640), 1.0)
+        await bossLoop(e, [
+            [gSnipeVolley, gCharge],
+            [gSnipeVolley, gCrossfire, gCharge],
+            [gCrossfire, gBarrage, gCharge, gSnipeVolley],
+        ], (ph) => 0.9 - 0.2 * (ph - 1))
+    },
+    hodson: async (e) => {
+        await moveBoss(e, vec2(1450, 640), 1.0)
+        await bossLoop(e, [
+            [hStapleFan, hAxeCombo],
+            [hStapleFan, hAxeCombo, hStapleRain],
+            [hAxeCombo, hBoomerang, hStapleRain, hStapleFan],
+        ], (ph) => 0.9 - 0.2 * (ph - 1), { anim: "walking", to: groundRepos })
+    },
+    venus: async (e) => {
+        await moveBoss(e, vec2(1500, 560), 1.0)
+        await bossLoop(e, [
+            [vSweep, vOrbs],
+            [vSweep, vSpiral, vOrbs],
+            [vSweep, vSpiral, vSweep, vOrbs],
+        ], (ph) => 0.9 - 0.2 * (ph - 1))
+    },
+    fightyMan: async (e) => {
+        await moveBoss(e, vec2(1300, 640), 1.0)
+        await bossLoop(e, [
+            [fWallRun, fPunchChain, fRingBurst],
+            [fPunchChain, fWallRun, fMeteors, fRingBurst, fSpiral],
+            [fInferno, fWallRun, fPunchChain, fMeteors, fSpiral, fRingBurst],
+        ], (ph) => 0.8 - 0.2 * (ph - 1), { anim: "walking", to: groundRepos })
+    },
+    djinn: async (e) => {
+        await moveBoss(e, vec2(1300, 620), 1.0)
+        await bossLoop(e, [
+            [dTeleportBarrage, dLightningGrid, dOrbs],
+            [dTeleportBarrage, dLightningGrid, dChaosSpiral, dSuperPunch],
+            [dSuperPunch, dLightningGrid, dChaosSpiral, dOrbs, dTeleportBarrage],
+        ], (ph) => 0.9 - 0.2 * (ph - 1))
+    },
+}
+
+// Called once per boss from the enemy AI loop (see EDITS.md, edit 2b).
+function startInfernumAI(e) {
+    if (e.infernumStarted) return
+    e.infernumStarted = true
+    ignoreEnemyCollisions(e)
+    const p = get("player")[0]
+    if (p) ensureVelTracker(p)
+    const routine = INFERNUM_ROUTINES[e.attackType]
+    if (!routine) return
+    routine(e)
+        .catch((err) => { if (err !== BOSS_DONE) console.error("[Infernum]", e.attackType, err) })
+        .finally(() => { if (e.dead || game_over) destroyAll("infernumBolt") })
+}
+
+
 
 scene("stage_one", async (playerTag) => { // Opens up a new scene for level one of the game
     currentRound = 1
@@ -4728,7 +5717,7 @@ scene("boss_rush", async (playerTag) => {
         { name: "venus", yPos: 90 },
         { name: "fadeout" },
         { name: "wait", time: 1 },
-        { name: "fightyMan", yPos: 90},
+        { name: "fightyMan", yPos: 90 },
         { name: "fadeout" },
         { name: "wait", time: 1 },
         { name: "djinn", yPos: 90 },
@@ -4834,6 +5823,7 @@ scene("character_select", () => { // Opens up a new scene for the character sele
     addButton("Select\nCharacter", { x: 240, y: 80 }, vec2(width() / 2, (height() / 2) + 380), () => {
         play("button")
         selectedCharacter = characterNames[cPos]
+        beginRun() // sets lives: 3 for main, 1 for stage select / boss rush
         if (gameMode === "main") {
             go("stage_one", characterNames[cPos])
         }
@@ -4854,6 +5844,7 @@ scene("character_select", () => { // Opens up a new scene for the character sele
     onKeyPress("z", () => {
         play("button")
         selectedCharacter = characterNames[cPos]
+        beginRun() // sets lives: 3 for main, 1 for stage select / boss rush
         if (gameMode === "main") {
             go("stage_one", selectedCharacter)
         }
