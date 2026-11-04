@@ -3451,7 +3451,7 @@ function safePlay(e, name, force = false) {
 // 2) LIVES SYSTEM
 // ---------------------------------------------------------------------
 let lives = 1
-const LIVES_BY_MODE = { main: 3, stage_select: 1, boss_rush: 1, infinity: 1 }
+const LIVES_BY_MODE = { main: 5, stage_select: 3, boss_rush: 3, infinity: 1 }
 
 function beginRun() { // call when a run starts (character select)
     lives = LIVES_BY_MODE[gameMode] ?? 1
