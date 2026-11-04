@@ -1043,6 +1043,9 @@ async function enableEnemyAI() {
             }
 
 
+            
+
+
 
 
 
@@ -2036,7 +2039,7 @@ async function switchToLoop2() {
 }
 
 async function checkFightyManHP() {
-    const maxHealth = 400 * difficultyMultiplier
+    const maxHealth = (isInsane() ? 200:500)* difficultyMultiplier
     const fightyMan = get("enemy").find(e => e.attackType === "fightyMan")
     if (!fightyMan) return
     while (fightyMan.exists() && !game_over && fightyMan.hp() > maxHealth * 0.6) {
@@ -2813,8 +2816,8 @@ function getEnemyAttributes(entityName, currentRound, difficulty) {
         }
     } else if (entityName === "fightyMan") {
         enemyAttributes = {
-            health: 500,
-            healthbar: 500,
+            health: (isInsane() ? 200:500),
+            healthbar: (isInsane() ? 200:500),
             aggression: 60 * difficultyMultiplier,
             speed: 7 * difficultyMultiplier,
             weight: 2,
@@ -2823,8 +2826,8 @@ function getEnemyAttributes(entityName, currentRound, difficulty) {
         }
     } else if (entityName === "djinn") {
         enemyAttributes = {
-            health: 300 * difficultyMultiplier,
-            healthbar: 300 * difficultyMultiplier,
+            health: (isInsane() ? 150:300)* difficultyMultiplier,
+            healthbar: (isInsane() ? 150:300)* difficultyMultiplier,
             aggression: 60 * difficultyMultiplier,
             speed: 10 * difficultyMultiplier,
             weight: 2,
@@ -2833,8 +2836,8 @@ function getEnemyAttributes(entityName, currentRound, difficulty) {
         }
     } else if (entityName === "ladro") {
         enemyAttributes = {
-            health: 120 * difficultyMultiplier,
-            healthbar: 120 * difficultyMultiplier,
+            health: (isInsane() ? 80:120)* difficultyMultiplier,
+            healthbar: (isInsane() ? 80:120)* difficultyMultiplier,
             aggression: 60 * difficultyMultiplier,
             speed: 7 * difficultyMultiplier,
             weight: 2,
@@ -2843,8 +2846,8 @@ function getEnemyAttributes(entityName, currentRound, difficulty) {
         }
     } else if (entityName === "hodson") {
         enemyAttributes = {
-            health: 80 * difficultyMultiplier,
-            healthbar: 80 * difficultyMultiplier,
+            health: (isInsane() ? 40:80)* difficultyMultiplier,
+            healthbar: (isInsane() ? 40:80)* difficultyMultiplier,
             aggression: 60 * difficultyMultiplier,
             speed: 6 * difficultyMultiplier,
             weight: 2,
@@ -2863,8 +2866,8 @@ function getEnemyAttributes(entityName, currentRound, difficulty) {
         }
     } else if (entityName === "grigory") {
         enemyAttributes = {
-            health: 250 * difficultyMultiplier,
-            healthbar: 250 * difficultyMultiplier,
+            health: (isInsane() ? 120:250)* difficultyMultiplier,
+            healthbar: (isInsane() ? 120:250)* difficultyMultiplier,
             aggression: 60 * difficultyMultiplier,
             speed: 7 * difficultyMultiplier,
             weight: 2,
@@ -2873,8 +2876,8 @@ function getEnemyAttributes(entityName, currentRound, difficulty) {
         }
     } else if (entityName === "venus") {
         enemyAttributes = {
-            health: 125 * difficultyMultiplier,
-            healthbar: 125 * difficultyMultiplier,
+            health: (isInsane() ? 80:125)* difficultyMultiplier,
+            healthbar: (isInsane() ? 80:125)* difficultyMultiplier,
             aggression: 60 * difficultyMultiplier,
             speed: 7 * difficultyMultiplier,
             weight: 2,
@@ -2940,7 +2943,7 @@ async function spawnVenus(zSpawn) {
         healthbar: new Healthbar({
             text: "Venus",
             icon: "venusIcon",
-            maxHealth: 125 * difficultyMultiplier,
+            maxHealth: maxHealth = (isInsane() ? 80:125)* difficultyMultiplier,
             position: vec2(1300, -100),
             color: rgb(255, 0, 0),
             flip: true
