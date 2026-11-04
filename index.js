@@ -2924,7 +2924,7 @@ async function spawnGrigory(zSpawn) {
         healthbar: new Healthbar({
             text: "Grigory",
             icon: "grigoryIcon",
-            maxHealth: 250 * difficultyMultiplier,
+            maxHealth: (isInsane() ? 120:250)* difficultyMultiplier,
             position: vec2(1300, -100),
             color: rgb(255, 0, 0),
             flip: true
@@ -3046,7 +3046,7 @@ async function spawnDjinn(zSpawn) {
             flip: true
         })
     }, zSpawn)
-    currentSong = play("Boss", { loop: true }, { volume: globalVolume })
+    currentSong = play("Djinn", { loop: true }, { volume: globalVolume })
     djinn.play("idle")
 }
 async function spawnHodson(zSpawn) {
